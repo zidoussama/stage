@@ -5,7 +5,7 @@ exports.createCategory = async (req, res) => {
         const { name, categoryType } = req.body;
         const existing = await Category.findOne({ name });
         if (existing) return res.status(400).json({ message: 'Category already exists' });
-        if (!Array.isArray(categoryType) || categoryType.some(item => typeof item !== 'string')) {
+        if (categoryType !== undefined && (!Array.isArray(categoryType) || categoryType.some(item => typeof item !== 'string'))) {
             return res.status(400).json({ message: 'categoryType should be an array of strings' });
         }
 
