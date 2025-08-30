@@ -12,7 +12,6 @@ const categorySchema = new mongoose.Schema({
     },
     categoryType: {
         type: [String],
-        required: true
     },
     createdAt: {
         type: Date, 
