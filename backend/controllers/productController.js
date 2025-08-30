@@ -92,7 +92,6 @@ exports.getProductById = async (req, res) => {
 
 exports.updateProduct = async (req, res) => {
     try {
-        // Destructure fields from req.body
         const { 
             name, 
             price, 
@@ -111,21 +110,18 @@ exports.updateProduct = async (req, res) => {
             Brand 
         } = req.body;
 
-        // Find product by ID
+        
         const product = await Product.findById(req.params.id);
 
-        // If product not found, return 404
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
         }
 
-        // If files are uploaded, update the image URLs
         if (req.files && req.files.length > 0) {
             const imageUrls = req.files.map(file => file.path);
             product.imageUrls = imageUrls;
         }
 
-        // Update the fields with the new values or keep the old ones if not provided
         product.set({
             name: name || product.name,
             price: price || product.price,
@@ -144,7 +140,6 @@ exports.updateProduct = async (req, res) => {
             Brand: Brand || product.Brand
         });
 
-        // Save the updated product
         await product.save();
         res.status(200).json({ message: 'Product updated', product });
     } catch (err) {
@@ -155,19 +150,15 @@ exports.updateProduct = async (req, res) => {
 
 exports.deleteProduct = async (req, res) => {
     try {
-        // Find and delete the product by ID
         const product = await Product.findByIdAndDelete(req.params.id);
 
-        // If product not found, return 404
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
         }
 
-        // Respond with success message
         res.status(200).json({ message: 'Product deleted', product });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error', error: err.message });
     }
 };
-s
