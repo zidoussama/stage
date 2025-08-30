@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Brand = require('./Brand');
 
 const productSchema = new mongoose.Schema({
     name: {
@@ -47,10 +48,10 @@ const productSchema = new mongoose.Schema({
         default: 0
     },
     concern: {
-        type: String,
+        type: [String],
     },
     typedepeau: {
-        type: String,
+        type: [String],
     },
     ingredients: {
         type: [String],
@@ -58,10 +59,16 @@ const productSchema = new mongoose.Schema({
     genre: {
         type: String,
     },
+    Brand: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Brand',
+        required: true
+    },
     createdAt: {
         type: Date,
         default: Date.now
     }
+
 });
 
 const Product = mongoose.model('Product', productSchema);

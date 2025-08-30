@@ -3,7 +3,7 @@ const Product = require('../models/Product');
 
 exports.createProduct = async (req, res) => {
     try {
-        const { name, price, category, description, stock, state, discount, size, Composition, otherinfo, concern, typedepeau, ingredients , genre } = req.body;
+        const { name, price, category, description, stock, state, discount, size, Composition, otherinfo, concern, typedepeau, ingredients , genre , Brand } = req.body;
 
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({ message: 'At least one image is required' });
@@ -19,6 +19,7 @@ exports.createProduct = async (req, res) => {
             stock,
             imageUrls,
             state,
+            Brand,
             discount,
             size,
             Composition,
@@ -60,7 +61,7 @@ exports.getProductById = async (req, res) => {
 
 exports.updateProduct = async (req, res) => {
     try {
-        const { name, price, category, description, stock, state, discount, size, Composition, otherinfo, concern, typedepeau, ingredients,genre } = req.body;
+        const { name, price, category, description, stock, state, discount, size, Composition, otherinfo, concern, typedepeau, ingredients, genre, Brand } = req.body;
         const product = await Product.findById(req.params.id);
         if (!product) return res.status(404).json({ message: 'Product not found' });
 
@@ -83,6 +84,7 @@ exports.updateProduct = async (req, res) => {
         product.typedepeau = typedepeau || product.typedepeau;
         product.ingredients = ingredients || product.ingredients;
         product.genre = genre || product.genre;
+        product.Brand = Brand || product.Brand;
 
         await product.save();
         res.status(200).json({ message: 'Product updated', product });
