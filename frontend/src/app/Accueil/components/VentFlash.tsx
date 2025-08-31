@@ -4,7 +4,7 @@ import { FC } from 'react';
 import Image from 'next/image';
 import { FaBolt, FaStar, FaHeart, FaEye, FaBagShopping, FaExpand } from 'react-icons/fa6';
 import p1 from '@/assets/p1.png';
-import { useProducts } from '../hooks/Ventflash';
+import { useProducts } from '../../../hooks/fetshproduct';
 
 const VenteFlash: FC = () => {
   const { products, loading, error } = useProducts("vent flash");

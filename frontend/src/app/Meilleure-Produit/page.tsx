@@ -1,26 +1,20 @@
-import Image, { StaticImageData } from 'next/image';
+"use client";
+
+import Image from "next/image";
 import {
   Star,
   Heart,
   SlidersHorizontal,
   ChevronLeft,
   ChevronRight,
-} from 'lucide-react';
-import p1 from '@/assets/p1.png';
+} from "lucide-react";
+import p1 from "@/assets/p1.png";
 
-// --- Types ---
-interface Product {
-  name: string;
-  price: number;
-  originalPrice: number;
-  discount: number;
-  description: string;
-  image: StaticImageData;
-}
+import type { Product } from "@/app/Accueil/types/accueil"; // or your Product type location
+import { useProducts } from "@/hooks/fetshproduct"; // adjust path as needed
+import { useState } from "react";
 
-// --- Reusable Components ---
-
-// 1. Product Card
+// --- ProductCard component (same as before, you can reuse yours) ---
 interface ProductCardProps {
   product: Product;
   isSpecial?: boolean;
@@ -30,12 +24,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isSpecial = false })
   return (
     <div
       className={`flex items-start gap-4 p-4 h-full ${
-        isSpecial ? 'bg-gray-50' : 'bg-white'
+        isSpecial ? "bg-yellow-50" : "bg-white"
       }`}
     >
       <div className="flex-shrink-0">
         <Image
-          src={product.image}
+          src={product.imageUrls[0]} // fallback image if none
           alt={product.name}
           width={140}
           height={140}
@@ -59,10 +53,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isSpecial = false })
               ${product.price.toFixed(2)}
             </span>
             <span className="text-sm text-gray-400 line-through">
-              ${product.originalPrice.toFixed(2)}
+              ${product.price.toFixed(2)}
             </span>
             {!isSpecial && (
-              <span className="bg-pink-500 text-white text-xs font-bold w-10 h-10 flex items-center justify-center rounded-full">
+              <span className="bg-pink-600 text-white text-xs font-bold w-10 h-10 flex items-center justify-center rounded-full">
                 -{product.discount}%
               </span>
             )}
@@ -74,20 +68,20 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isSpecial = false })
 
         {/* Action Buttons & Badges */}
         <div className="mt-auto flex justify-between items-center">
-          <button className="bg-gray-800 text-white text-xs font-bold px-5 py-2.5 rounded-md hover:bg-gray-700 tracking-wider">
+          <button className="bg-pink-600 text-white text-xs font-bold px-5 py-2.5 rounded-md hover:bg-pink-700 tracking-wider">
             ADD TO BAG
           </button>
           {isSpecial && (
-            <div className="bg-pink-500 text-white text-xl font-bold w-10 h-10 flex items-center justify-center rounded-full">
+            <div className="bg-pink-600 text-white text-xl font-bold w-10 h-10 flex items-center justify-center rounded-full">
               %
             </div>
           )}
         </div>
 
-        {/* Special Icons (only for the first card) */}
+        {/* Special Icons */}
         {isSpecial && (
           <div className="absolute top-0 right-0 flex flex-col gap-3">
-            <button className="text-gray-500 hover:text-red-500">
+            <button className="text-gray-500 hover:text-pink-500">
               <Heart className="w-5 h-5" />
             </button>
             <button className="text-gray-500 hover:text-gray-800">
@@ -113,7 +107,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isSpecial = false })
   );
 };
 
-// 2. Pagination
+// Pagination component - same as before
 const Pagination: React.FC = () => {
   const pages = [1, 2, 3, 4, 5];
   const currentPage = 1;
@@ -129,8 +123,8 @@ const Pagination: React.FC = () => {
           key={page}
           className={`h-9 w-9 flex items-center justify-center rounded-full font-medium text-sm transition-colors ${
             currentPage === page
-              ? 'bg-gray-800 text-white'
-              : 'text-gray-600 bg-gray-100 hover:bg-gray-200'
+              ? "bg-gray-800 text-white"
+              : "text-gray-600 bg-gray-100 hover:bg-gray-200"
           }`}
         >
           {page}
@@ -144,46 +138,43 @@ const Pagination: React.FC = () => {
   );
 };
 
-// --- Main Page ---
-
-const MeilleureProduitPage: React.FC = () => {
-  const productData: Product = {
-    name: 'Satin Trousers With Dastic',
-    price: 68.0,
-    originalPrice: 88.0,
-    discount: 25,
-    description:
-      'Rejuvenate and refresh your skin with our Biowave™ Moisturizing Mist. Infused with the essence of roses, it hydrates, soothes, and revitalizes, leaving your skin with a healthy sun-kissed glow.',
-    image: p1,
-  };
-
-  const products = Array(10).fill(productData);
+// --- Main VenteFlashPage using hook ---
+const VenteFlashPage: React.FC = () => {
+  // Fetch products with filter state "flash" or "vent flash"
+  const { products, loading, error } = useProducts("vent flash");
 
   return (
     <div className="bg-white min-h-screen">
       <main className="container mx-auto px-4 sm:px-6 lg:px-24 py-10">
         {/* Top section with title and sorting */}
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Meilleure produit</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Vente Flash</h2>
           <div className="text-right">
             <button className="flex items-center gap-2 border border-gray-300 rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
               Prix plus élevé
               <SlidersHorizontal className="h-4 w-4 text-gray-500" />
             </button>
-            <p className="text-xs text-gray-500 mt-1">10 187 résultats trouvés</p>
+            <p className="text-xs text-gray-500 mt-1">
+              {loading ? "Chargement..." : `${products.length} résultats trouvés`}
+            </p>
           </div>
         </div>
 
-        {/* Product Grid */}
-        <div className="rounded-md overflow-hidden">
-          <div className="grid grid-cols-1 md:grid-cols-2 -m-px">
-            {products.map((product, index) => (
-              <div key={index} className="p-2">
-                <ProductCard product={product} isSpecial={index === 0} />
-              </div>
-            ))}
+        {/* Handle Loading & Error */}
+        {loading && <p className="text-center text-gray-500">Chargement des produits...</p>}
+        {error && <p className="text-center text-pink-500">{error}</p>}
+
+        {!loading && !error && (
+          <div className="rounded-md overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-2 -m-px">
+              {products.map((product, index) => (
+                <div key={index} className="p-2">
+                  <ProductCard product={product} isSpecial={index === 0} />
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <Pagination />
       </main>
@@ -191,4 +182,4 @@ const MeilleureProduitPage: React.FC = () => {
   );
 };
 
-export default MeilleureProduitPage;
+export default VenteFlashPage;
