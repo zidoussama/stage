@@ -12,7 +12,7 @@ const VenteFlash: FC = () => {
   if (loading) return <p>Loading products...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
 
-  return (
+    return (
     <section className="px-6 py-12 bg-gray-50">
       <div className="flex justify-between items-center mb-8 max-w-7xl mx-auto">
         <div className="flex items-center gap-3 text-2xl font-bold text-gray-800">
@@ -26,7 +26,7 @@ const VenteFlash: FC = () => {
 
       <div className="flex justify-center">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 max-w-7xl">
-          {products.map((product) => (
+          {products.slice(0, 5).map((product) => ( // Modified line here
             <div key={product._id} className="group w-[230px] mx-auto">
               <div className="relative bg-gray-200 rounded-xl flex items-center justify-center p-4 h-[240px] mb-4">
                 {product.discount > 0 && (
