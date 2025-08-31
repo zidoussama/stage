@@ -54,40 +54,44 @@ exports.deleteCategory = async (req, res) => {
 exports.updateCategory = async (req, res) => {
     try {
         const { id } = req.params;
-
         const { name, categoryType } = req.body;
 
+        // Find the existing category by id
         const category = await Category.findById(id);
         if (!category) {
             return res.status(404).json({ message: 'Category not found' });
         }
 
-        // If new image(s) uploaded, delete old ones and replace
-        if (req.files && req.files.length > 0) {
-            // Delete old image(s)
-            if (category.imageUrl && category.imageUrl.length > 0) {
-                for (const oldPath of category.imageUrl) {
-                    fs.unlink(path.join(__dirname, '..', oldPath), (err) => {
-                        if (err) console.error('Failed to delete old image:', err);
-                    });
-                }
+        // Check if name is being updated and already exists on another category
+        if (name && name !== category.name) {
+            const existing = await Category.findOne({ name });
+            if (existing) {
+                return res.status(400).json({ message: 'Category name already exists' });
             }
-
-            // Set new image path(s)
-            category.imageUrl = req.file.path;
+            category.name = name;
         }
 
-        // Update other fields
-        if (name) category.name = name;
-        if (categoryType) category.categoryType = categoryType;
-        
+        // Validate categoryType if provided
+        if (categoryType !== undefined) {
+            if (!Array.isArray(categoryType) || categoryType.some(item => typeof item !== 'string')) {
+                return res.status(400).json({ message: 'categoryType should be an array of strings' });
+            }
+            category.categoryType = categoryType;
+        }
+
+        // If there's a new file uploaded, validate and update imageUrl
+        if (req.file) {
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+            if (!allowedTypes.includes(req.file.mimetype)) {
+                return res.status(400).json({ message: 'Invalid file type. Only jpg and png allowed' });
+            }
+            category.imageUrl = req.file.path;
+        }
 
         await category.save();
 
         res.status(200).json({ message: 'Category updated', category });
-
     } catch (err) {
-        console.error('Update Category Error:', err);
         res.status(500).json({ message: 'Server error', error: err.message });
     }
 };
