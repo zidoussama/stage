@@ -74,12 +74,13 @@ exports.updateCategory = async (req, res) => {
             }
 
             // Set new image path(s)
-            category.imageUrl = req.files.map(file => file.path);
+            category.imageUrl = req.file.path;
         }
 
         // Update other fields
         if (name) category.name = name;
         if (categoryType) category.categoryType = categoryType;
+        
 
         await category.save();
 
