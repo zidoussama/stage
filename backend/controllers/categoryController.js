@@ -54,23 +54,44 @@ exports.deleteCategory = async (req, res) => {
 exports.updateCategory = async (req, res) => {
     try {
         const { id } = req.params;
+
+        // Check for valid MongoDB ID
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: 'Invalid category ID' });
+        }
+
         const { name, categoryType } = req.body;
 
         const category = await Category.findById(id);
-        if (!category) return res.status(404).json({ message: 'Category not found' });
-
-        if (req.files && req.files.length > 0) {
-            const imageUrl = req.files.map(file => file.path);
-            category.imageUrl = imageUrl;
+        if (!category) {
+            return res.status(404).json({ message: 'Category not found' });
         }
 
+        // If new image(s) uploaded, delete old ones and replace
+        if (req.files && req.files.length > 0) {
+            // Delete old image(s)
+            if (category.imageUrl && category.imageUrl.length > 0) {
+                for (const oldPath of category.imageUrl) {
+                    fs.unlink(path.join(__dirname, '..', oldPath), (err) => {
+                        if (err) console.error('Failed to delete old image:', err);
+                    });
+                }
+            }
 
-        category.name = name || category.name;
-        category.categoryType = categoryType || category.categoryType;
+            // Set new image path(s)
+            category.imageUrl = req.files.map(file => file.path);
+        }
+
+        // Update other fields
+        if (name) category.name = name;
+        if (categoryType) category.categoryType = categoryType;
 
         await category.save();
+
         res.status(200).json({ message: 'Category updated', category });
+
     } catch (err) {
+        console.error('Update Category Error:', err);
         res.status(500).json({ message: 'Server error', error: err.message });
     }
 };
