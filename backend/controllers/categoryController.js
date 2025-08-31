@@ -55,11 +55,6 @@ exports.updateCategory = async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Check for valid MongoDB ID
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: 'Invalid category ID' });
-        }
-
         const { name, categoryType } = req.body;
 
         const category = await Category.findById(id);
