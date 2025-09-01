@@ -73,7 +73,7 @@ export default function Navbar() {
         router.push('/solde');
         break;
       case 'Vente Flash':
-        router.push('/Meilleure-Produit');
+        router.push('/ventes-flash');
         break;
       case 'Nouveau produit':
         router.push('/NouveauProduit');

@@ -5,9 +5,11 @@ import Image from 'next/image';
 import { FaBolt, FaStar, FaHeart, FaEye, FaBagShopping, FaExpand } from 'react-icons/fa6';
 import p1 from '@/assets/p1.png';
 import { useProducts } from '../../../hooks/fetshproduct';
+import { useRouter } from 'next/navigation';
 
 const VenteFlash: FC = () => {
   const { products, loading, error } = useProducts("vent flash");
+  const router = useRouter();
 
   if (loading) return <p>Loading products...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
@@ -19,14 +21,17 @@ const VenteFlash: FC = () => {
           <FaBolt className="text-pink-500" />
           <span>Vente flash</span>
         </div>
-        <button className="text-sm text-gray-700 hover:text-pink-500 flex items-center gap-1 font-medium">
+        <button className="text-sm text-gray-700 hover:text-pink-500 flex items-center gap-1 font-medium" onClick={() => {
+          router.push('/ventes-flash');
+          }}>
           Voir plus <span className="text-lg">→</span>
+          
         </button>
       </div>
 
       <div className="flex justify-center">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 max-w-7xl">
-          {products.slice(0, 5).map((product) => ( // Modified line here
+          {products.slice(0, 5).map((product) => ( 
             <div key={product._id} className="group w-[230px] mx-auto">
               <div className="relative bg-gray-200 rounded-xl flex items-center justify-center p-4 h-[240px] mb-4">
                 {product.discount > 0 && (
