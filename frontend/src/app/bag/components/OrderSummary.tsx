@@ -3,6 +3,7 @@ import { OrderSummaryProps } from '@/app/bag/types/bag';
 
 
 export const OrderSummary = ({ subtotal, shipping, total }: OrderSummaryProps) => (
+    
     // The `sticky` and `top-8` classes make this component stick to the top of the viewport
     <aside className="lg:col-span-1 h-fit sticky top-8">
         <div className="bg-white p-6 rounded-lg shadow-sm">

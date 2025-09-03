@@ -2,16 +2,6 @@
 
 import { StaticImageData } from 'next/image';
 
-// Defines a single item in the shopping cart
-export interface CartItem {
-  id: number;
-  name: string;
-  brand: string;
-  image: StaticImageData;
-  price: number;
-  quantity: number;
-}
-
 export interface OrderSummaryProps {
     subtotal: number;
     shipping: number;
@@ -19,5 +9,13 @@ export interface OrderSummaryProps {
 }
 
 export interface BagItemsListProps {
-    items: CartItem[];
+    items: BagItem[];
+}
+export interface BagItem {
+  _id: string;
+  name: string;
+  price: number;
+  categoryof: string;
+  quantity: number;
+  imageUrl: string;
 }

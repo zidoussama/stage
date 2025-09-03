@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import useLogin from "@/app/(auth)/sign-in/hooks/useLogin";
+import Image from "next/image";
+import logo from "@/assets/logo/logopar.png";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -26,9 +28,9 @@ export default function LoginPage() {
     <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8">
       
       <div className="flex justify-center mb-6">
-        <div className="w-16 h-16 bg-pink-500 rounded-full flex items-center justify-center text-2xl font-bold text-white shadow-md">
-          LOGO
-        </div>
+    
+        <Image src={logo} alt="Logo" width={300} height={100} />
+        
       </div>
 
       
@@ -102,7 +104,7 @@ export default function LoginPage() {
       
       <p className="text-sm text-center text-gray-600 mt-4">
         Don’t have an account?{" "}
-        <Link href="/signup" className="text-pink-600 hover:underline">
+        <Link href="/sign-up" className="text-pink-600 hover:underline">
           Sign up
         </Link>
       </p>

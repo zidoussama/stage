@@ -17,6 +17,7 @@ import { BiChevronDown } from 'react-icons/bi';
 import { MdLocationOn } from 'react-icons/md';
 import { useRouter } from 'next/navigation';
 import logo from '@/assets/logo/logopar.png';
+import Cookies from 'js-cookie'
 
 type SearchBarProps = {
   className?: string;
@@ -78,10 +79,20 @@ export default function Navbar() {
       case 'Nouveau produit':
         router.push('/NouveauProduit');
         break;
+      case 'Nous contacter':
+        router.push('/contact');
+        break;
       default:
         console.log(`Clicked ${buttonText}`);
     }
     setMobileMenuOpen(false); // Optional: close mobile menu on click
+  };
+  const handleNavigation = () => {
+    if (Cookies.get("token")) {
+      router.push("/profile");
+    } else {
+      router.push("/sign-in");
+    }
   };
 
   return (
@@ -116,7 +127,7 @@ export default function Navbar() {
             <FaShoppingCart className="cursor-pointer" aria-label="Shopping Cart" onClick={() => router.push('/bag')} />
             <FaRegCommentDots className="cursor-pointer" aria-label="Comments" />
             <FaBell className="cursor-pointer" aria-label="Notifications" />
-            <FaUser className="w-8 h-8 bg-gray-200 rounded-full cursor-pointer border" aria-label="User Profile" />
+            <FaUser className="w-8 h-8 bg-gray-200 rounded-full cursor-pointer border" aria-label="User Profile" onClick={handleNavigation} />
           </div>
         </div>
       </div>

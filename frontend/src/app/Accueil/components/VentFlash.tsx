@@ -6,10 +6,26 @@ import { FaBolt, FaStar, FaHeart, FaEye, FaBagShopping, FaExpand } from 'react-i
 import p1 from '@/assets/p1.png';
 import { useProducts } from '../../../hooks/fetshproduct';
 import { useRouter } from 'next/navigation';
+import { useBag } from '@/hooks/useBag';
+import { useProductNavigation } from '@/hooks/useProductNavigation';
+
 
 const VenteFlash: FC = () => {
   const { products, loading, error } = useProducts("vent flash");
   const router = useRouter();
+  const goToProduct = useProductNavigation();
+  
+        const { addToBag } = useBag();
+      
+        function handleAddToBag(product: any) {
+          addToBag({
+            _id: product._id,
+            name: product.name,
+            price: product.price,
+            categoryof: product.category.name,
+            imageUrl: product.imageUrls[0],
+          });
+        }
 
   if (loading) return <p>Loading products...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
@@ -33,7 +49,7 @@ const VenteFlash: FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 max-w-7xl">
           {products.slice(0, 5).map((product) => ( 
             <div key={product._id} className="group w-[230px] mx-auto">
-              <div className="relative bg-gray-200 rounded-xl flex items-center justify-center p-4 h-[240px] mb-4">
+              <div onClick={() => goToProduct(product)} className="relative bg-gray-200 rounded-xl flex items-center justify-center p-4 h-[240px] mb-4">
                 {product.discount > 0 && (
                   <div className="absolute top-3 left-3 bg-pink-500 text-white text-xs px-3 py-1.5 rounded-full font-bold z-10">
                     -{product.discount}%
@@ -43,10 +59,8 @@ const VenteFlash: FC = () => {
                   <button className="bg-white p-2.5 rounded-full shadow-md text-gray-700 hover:text-pink-500 transition-colors">
                     <FaHeart size={16} />
                   </button>
-                  <button className="bg-white p-2.5 rounded-full shadow-md text-gray-700 hover:text-pink-500 transition-colors">
-                    <FaExpand size={16} />
-                  </button>
-                  <button className="bg-pink-500 text-white p-2.5 rounded-full shadow-md hover:bg-pink-600 transition-colors">
+
+                  <button onClick={() => goToProduct(product)} className="bg-pink-500 text-white p-2.5 rounded-full shadow-md hover:bg-pink-600 transition-colors">
                     <FaEye size={16} />
                   </button>
                 </div>
@@ -58,7 +72,7 @@ const VenteFlash: FC = () => {
                   className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                 />
                 <button className="absolute bottom-4 w-[85%] py-2.5 bg-black text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 font-semibold">
-                  <div className="flex items-center justify-center gap-2">
+                  <div className="flex items-center justify-center gap-2" onClick={() => handleAddToBag(product)}>
                     <FaBagShopping size={14} />
                     ADD TO BAG
                   </div>

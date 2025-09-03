@@ -1,21 +1,36 @@
 'use client';
 
 import Image from 'next/image';
-import p1 from '@/assets/p1.png';
-import banner from '@/assets/new.png'; // your new banner image
-import { useProducts } from '@/hooks/fetshproduct'; // Assuming this hook exists and supports filtering by state
-import type { Product } from '@/types/product';
+import banner from '@/assets/new.png';
+import { useProducts } from '@/hooks/fetshproduct';
+import { useState, useMemo } from 'react';
+import { useBag } from '@/hooks/useBag'; 
+import { useProductNavigation } from '@/hooks/useProductNavigation';
+
+
+
+const PRODUCTS_PER_PAGE = 16;
 
 export default function NewInStoreGrid() {
-  // Fetch products with state = "new in store"
   const { products, loading, error } = useProducts('new in store');
+  const [currentPage, setCurrentPage] = useState(1);
+  const { addToBag } = useBag();
+  const goToProduct = useProductNavigation();
 
-  // Compute tag and oldPrice if needed
+
+  function handleAddToBag(product: any) {
+    addToBag({
+      _id: product._id,
+      name: product.name,
+      price: product.price,
+      categoryof: product.category.name,
+      imageUrl: product.imageUrls[0], // first image URL
+    });
+  }
+
+  // Add tag and oldPrice to products
   const productsWithExtras = products.map((product) => {
-    // You can customize tags for "new in store" if you want
     const tag = product.state === 'new in store' ? 'NOUVEAU' : undefined;
-
-    // Compute oldPrice if discount > 0
     const oldPrice =
       product.discount && product.discount > 0
         ? (product.price / (1 - product.discount / 100)).toFixed(2)
@@ -24,9 +39,26 @@ export default function NewInStoreGrid() {
     return { ...product, tag, oldPrice };
   });
 
+  // Calculate total pages
+  const totalPages = Math.ceil(productsWithExtras.length / PRODUCTS_PER_PAGE);
+
+  // Paginated products
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * PRODUCTS_PER_PAGE;
+    const end = start + PRODUCTS_PER_PAGE;
+    return productsWithExtras.slice(start, end);
+  }, [productsWithExtras, currentPage]);
+
+  // Handle page change
+  const goToPage = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
   return (
     <section className="px-4 sm:px-10 py-10 bg-white">
-      {/* Top Banner */}
+      {/* Banner */}
       <div className="max-w-7xl mx-auto mb-10">
         <Image
           src={banner}
@@ -53,8 +85,9 @@ export default function NewInStoreGrid() {
       {/* Product Grid */}
       {!loading && !error && (
         <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 px-40">
-          {productsWithExtras.map((product, index) => (
+          {paginatedProducts.map((product, index) => (
             <div
+              onClick={() => goToProduct(product)}
               key={product._id || index}
               className="relative group bg-white rounded-xl p-4 shadow hover:shadow-xl transition duration-300 h-[280px] w-[200px]"
             >
@@ -73,7 +106,7 @@ export default function NewInStoreGrid() {
               </span>
 
               <Image
-                src={p1}
+                src={product.imageUrls[0]}
                 alt={product.name}
                 width={140}
                 height={140}
@@ -94,7 +127,7 @@ export default function NewInStoreGrid() {
                 )}
               </div>
 
-              <button className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[85%] py-2 bg-black text-white text-xs rounded-full opacity-0 group-hover:opacity-100 transition duration-300">
+              <button onClick={() => handleAddToBag(product)} className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[85%] py-2 bg-black text-white text-xs rounded-full opacity-0 group-hover:opacity-100 transition duration-300">
                 ADD TO BAG
               </button>
             </div>
@@ -103,22 +136,43 @@ export default function NewInStoreGrid() {
       )}
 
       {/* Pagination */}
-      <div className="flex justify-center mt-10">
-        <ul className="flex gap-2 text-sm">
-          <li className="border px-3 py-1 rounded-full text-gray-500 hover:text-black">&lt;</li>
-          {[1, 2, 3, 4, 5].map((page) => (
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-10">
+          <ul className="flex gap-2 text-sm">
             <li
-              key={page}
-              className={`px-3 py-1 rounded-full cursor-pointer ${
-                page === 1 ? 'bg-black text-white' : 'text-gray-500 hover:text-black'
+              onClick={() => goToPage(currentPage - 1)}
+              className={`border px-3 py-1 rounded-full cursor-pointer text-gray-500 hover:text-black ${
+                currentPage === 1 ? 'opacity-50 pointer-events-none' : ''
               }`}
             >
-              {page}
+              &lt;
             </li>
-          ))}
-          <li className="border px-3 py-1 rounded-full text-gray-500 hover:text-black">&gt;</li>
-        </ul>
-      </div>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <li
+                key={page}
+                onClick={() => goToPage(page)}
+                className={`px-3 py-1 rounded-full cursor-pointer ${
+                  page === currentPage
+                    ? 'bg-black text-white'
+                    : 'text-gray-500 hover:text-black'
+                }`}
+              >
+                {page}
+              </li>
+            ))}
+
+            <li
+              onClick={() => goToPage(currentPage + 1)}
+              className={`border px-3 py-1 rounded-full cursor-pointer text-gray-500 hover:text-black ${
+                currentPage === totalPages ? 'opacity-50 pointer-events-none' : ''
+              }`}
+            >
+              &gt;
+            </li>
+          </ul>
+        </div>
+      )}
     </section>
   );
 }

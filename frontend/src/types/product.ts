@@ -3,7 +3,7 @@ _id: string;
   name: string;
   price: number;
   oldPrice?: number;  
-  category: string;
+  category: any;
   description: string;
   stock: number;
   imageUrls: string[];
@@ -20,4 +20,6 @@ _id: string;
   createdAt: string;
   __v?: number;
   tag?: 'SOLDE' | 'NEW' | string;
+  isFeatured?: boolean;
 }
+
