@@ -87,7 +87,7 @@ export default function NewInStoreGrid() {
         <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 px-40">
           {paginatedProducts.map((product, index) => (
             <div
-              onClick={() => goToProduct(product)}
+              
               key={product._id || index}
               className="relative group bg-white rounded-xl p-4 shadow hover:shadow-xl transition duration-300 h-[280px] w-[200px]"
             >
