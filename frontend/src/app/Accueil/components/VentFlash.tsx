@@ -49,7 +49,7 @@ const VenteFlash: FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 max-w-7xl">
           {products.slice(0, 5).map((product) => ( 
             <div key={product._id} className="group w-[230px] mx-auto">
-              <div onClick={() => goToProduct(product)} className="relative bg-gray-200 rounded-xl flex items-center justify-center p-4 h-[240px] mb-4">
+              <div  className="relative bg-gray-200 rounded-xl flex items-center justify-center p-4 h-[240px] mb-4">
                 {product.discount > 0 && (
                   <div className="absolute top-3 left-3 bg-pink-500 text-white text-xs px-3 py-1.5 rounded-full font-bold z-10">
                     -{product.discount}%
@@ -60,11 +60,12 @@ const VenteFlash: FC = () => {
                     <FaHeart size={16} />
                   </button>
 
-                  <button onClick={() => goToProduct(product)} className="bg-pink-500 text-white p-2.5 rounded-full shadow-md hover:bg-pink-600 transition-colors">
+                  <button  className="bg-pink-500 text-white p-2.5 rounded-full shadow-md hover:bg-pink-600 transition-colors">
                     <FaEye size={16} />
                   </button>
                 </div>
                 <Image
+                onClick={() => goToProduct(product)}
                   src={product.imageUrls?.[0] || p1}
                   alt={product.name}
                   width={200}
