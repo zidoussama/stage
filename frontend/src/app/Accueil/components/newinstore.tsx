@@ -63,7 +63,7 @@ export default function NewInStore() {
 <div className="lg:col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-10" >
   {products.slice(0, 6).map((product) => (
     <div key={product._id} className="group flex flex-col">
-      <div onClick={() => goToProduct(product)} className="relative border border-gray-200 rounded-xl p-3 mb-4">
+      <div  className="relative border border-gray-200 rounded-xl p-3 mb-4">
         {/* Hover Icons */}
         <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
           <button className="bg-white p-2 rounded-full shadow-md text-gray-700 hover:text-pink-500"><FaHeart size={14} /></button>
@@ -73,6 +73,7 @@ export default function NewInStore() {
 
         {/* Product Image */}
         <Image
+        onClick={() => goToProduct(product)}
           src={product.imageUrls[0]}
           alt={product.name}
           width={180}

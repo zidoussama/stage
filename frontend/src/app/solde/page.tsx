@@ -63,7 +63,7 @@ export default function SoldesGrid() {
           {paginatedProducts.map((product, index) => (
             <div
               key={product._id || index}
-              onClick={() => goToProduct(product)}
+              
               className="relative group bg-white rounded-xl p-3 shadow hover:shadow-xl transition duration-300 w-[300px] h-[450px] flex flex-col"
             >
               {/* Like Icon */}
@@ -75,6 +75,7 @@ export default function SoldesGrid() {
               <div className="flex justify-center items-center h-[260px] mb-3">
                 {product.imageUrls?.[0] ? (
                   <img
+                  onClick={() => goToProduct(product)}
                     src={product.imageUrls[0]}
                     alt={product.name}
                     className="object-contain w-[260px] h-[260px]"

@@ -38,7 +38,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
 
   return (
     <div
-      onClick={() => goToProduct(product)}
+      
       className={`flex items-start gap-4 p-4 h-full transition-colors duration-300 ${
         isHovered ? "bg-gray-50" : "bg-white"
       }`}
@@ -47,6 +47,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
     >
       <div className="flex-shrink-0">
         <Image
+        onClick={() => goToProduct(product)}
           src={product.imageUrls[0]}
           alt={product.name}
           width={140}
