@@ -111,7 +111,6 @@ export default function Navbar() {
             } items-center gap-4`}
           >
             <FaShoppingCart className="cursor-pointer" aria-label="Shopping Cart" onClick={() => router.push('/bag')} />
-            <FaRegCommentDots className="cursor-pointer" aria-label="Comments" />
             <FaSignOutAlt className="cursor-pointer" aria-label="Sign Out" onClick={handleLogout} />
             <FaUser className="w-8 h-8 bg-gray-200 rounded-full cursor-pointer border" aria-label="User Profile" onClick={handleNavigation} />
           </div>
