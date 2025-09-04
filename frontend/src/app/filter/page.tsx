@@ -9,25 +9,10 @@ import p1 from '@/assets/p1.png';
 import p2 from '@/assets/p1.png'; 
 import p3 from '@/assets/p1.png';
 import p4 from '@/assets/p1.png';
-
-// --- TYPES ---
+import { Product } from '@/types/product';
+import { getAllProducts } from '@/hooks/useProduct';
 import type { StaticImageData } from 'next/image';
 
-interface Product {
-  id: number;
-  name: string;
-  image: string | StaticImageData;
-  rating: number;
-  reviewCount: number;
-  description: string;
-  price: number;
-  salePrice: number | null;
-  discount: number | null;
-  badge: {
-    type: 'new' | 'percent' | 'solde' | null;
-    text: string;
-  } | null;
-}
 
 interface Filters {
   genre: string[];
@@ -41,10 +26,10 @@ interface Filters {
 
 // --- DUMMY DATA ---
 const baseProducts: Product[] = [
-  { id: 1, name: 'Satin Trousers With Elastic', image: p1, rating: 4.5, reviewCount: 143, description: 'Rejuvenate and refresh your skin with our Rosewater Hydrating Mist. Infused with the essence of roses, it hydrates, soothes, and revitalizes, leaving your skin with a healthy and radiant glow.', price: 98.00, salePrice: 68.00, discount: 25, badge: null },
-  { id: 2, name: 'Straight Trousers', image: p2, rating: 4.0, reviewCount: 98, description: 'A classic straight mascara for a timeless look.', price: 68.00, salePrice: null, discount: null, badge: { type: 'new', text: 'NEW' } },
-  { id: 3, name: 'Biker-Style Leggings', image: p3, rating: 4.8, reviewCount: 210, description: 'The perfect tool for flawless foundation application.', price: 98.00, salePrice: 68.00, discount: 25, badge: { type: 'percent', text: '25%' } },
-  { id: 4, name: 'Jacquard Fluid Trousers', image: p4, rating: 4.2, reviewCount: 75, description: 'Define your eyes with this sharp, long-lasting eyeliner.', price: 68.00, salePrice: null, discount: null, badge: null },
+  { _id: 1, name: 'Satin Trousers With Elastic', image: p1, rating: 4.5, reviewCount: 143, description: 'Rejuvenate and refresh your skin with our Rosewater Hydrating Mist. Infused with the essence of roses, it hydrates, soothes, and revitalizes, leaving your skin with a healthy and radiant glow.', price: 98.00, salePrice: 68.00, discount: 25, badge: null },
+  { _id: 2, name: 'Straight Trousers', image: p2, rating: 4.0, reviewCount: 98, description: 'A classic straight mascara for a timeless look.', price: 68.00, salePrice: null, discount: null, badge: { type: 'new', text: 'NEW' } },
+  { _id: 3, name: 'Biker-Style Leggings', image: p3, rating: 4.8, reviewCount: 210, description: 'The perfect tool for flawless foundation application.', price: 98.00, salePrice: 68.00, discount: 25, badge: { type: 'percent', text: '25%' } },
+  { _id: 4, name: 'Jacquard Fluid Trousers', image: p4, rating: 4.2, reviewCount: 75, description: 'Define your eyes with this sharp, long-lasting eyeliner.', price: 68.00, salePrice: null, discount: null, badge: null },
 ];
 
 const products: Product[] = Array.from({ length: 28 }, (_, i) => ({ ...baseProducts[i % baseProducts.length], id: i + 1 }));
@@ -71,14 +56,14 @@ const StarRating: React.FC<{ rating: number }> = ({ rating }) => {
 
 const ProductGridCard: React.FC<{ product: Product }> = ({ product }) => (
   <div className="group relative bg-gray-100 rounded-xl p-4 flex flex-col">
-    {product.badge && (
+    {product.state && (
       <div
         className={`absolute top-3 left-3 z-10 text-white text-xs font-bold uppercase
-                ${product.badge.type === 'solde' ? 'bg-orange-500 px-3 py-1 rounded-md' : ''}
-                ${product.badge.type === 'new' ? 'bg-pink-500 w-10 h-10 rounded-full flex items-center justify-center' : ''}
-                ${product.badge.type === 'percent' ? 'bg-pink-600 w-12 h-12 rounded-full flex items-center justify-center' : ''}`}
+                ${product.state === 'sold' ? 'bg-orange-500 px-3 py-1 rounded-md' : ''}
+                ${product.state === 'new in store' ? 'bg-pink-500 w-10 h-10 rounded-full flex items-center justify-center' : ''}
+                `}
       >
-        {product.badge.text}
+        {product.state}
       </div>
     )}
     <div className="absolute top-3 right-3 flex flex-col gap-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -87,7 +72,7 @@ const ProductGridCard: React.FC<{ product: Product }> = ({ product }) => (
       <button className="p-2 border rounded-full bg-pink-600 text-white"><FiEye size={18} /></button>
     </div>
     <div className="relative mb-4">
-      <Image src={product.image} alt={product.name} width={250} height={250} className="w-full h-auto object-contain rounded-md" />
+      <Image src={product.imageUrls[0]} alt={product.name} width={250} height={250} className="w-full h-auto object-contain rounded-md" />
       <div className="absolute bottom-0 left-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
         <button className="w-full bg-gray-800 text-white font-semibold py-2.5 rounded-lg">ADD TO BAG</button>
       </div>
@@ -95,9 +80,9 @@ const ProductGridCard: React.FC<{ product: Product }> = ({ product }) => (
     <div className="text-center mt-auto">
       <h3 className="font-semibold text-gray-800">{product.name}</h3>
       <div className="flex justify-center items-baseline gap-2 mt-2">
-        {product.salePrice ? (
+        {product.price ? (
           <>
-            <span className="font-bold text-gray-900">${product.salePrice.toFixed(2)}</span>
+            <span className="font-bold text-gray-900">${product.price.toFixed(2)}</span>
             <span className="text-sm text-gray-400 line-through">${product.price.toFixed(2)}</span>
             <span className="bg-pink-100 text-pink-600 text-xs font-bold px-2 py-0.5 rounded-md">-{product.discount}%</span>
           </>
@@ -112,13 +97,13 @@ const ProductGridCard: React.FC<{ product: Product }> = ({ product }) => (
 const ProductListCard: React.FC<{ product: Product }> = ({ product }) => (
   <div className="group bg-gray-50 rounded-xl p-4 flex flex-col sm:flex-row gap-6 relative">
     <div className="relative w-full sm:w-1/4 flex-shrink-0">
-      {product.badge && (
+      {product.state && (
         <div className="absolute top-0 left-0 w-16 h-16 bg-pink-600 rounded-full flex items-center justify-center text-white font-bold z-10 -translate-x-1/4 -translate-y-1/4">
-          <span>{product.badge.text}</span>
+          <span>{product.state}</span>
         </div>
       )}
       <div className="bg-white rounded-lg p-4 h-full flex items-center justify-center">
-        <Image src={product.image} alt={product.name} width={200} height={200} className="w-full h-auto object-contain rounded-md" />
+        <Image src={product.imageUrls[0]} alt={product.name} width={200} height={200} className="w-full h-auto object-contain rounded-md" />
       </div>
     </div>
 
@@ -126,13 +111,13 @@ const ProductListCard: React.FC<{ product: Product }> = ({ product }) => (
       <h3 className="text-lg font-semibold text-gray-800">{product.name}</h3>
       <div className="flex items-center gap-2 my-2 text-xs text-gray-500">
         <StarRating rating={product.rating} />
-        <span>({product.rating}/5) | {product.reviewCount} Reviews</span>
+        <span>({product.rating}/5)  Reviews</span>
       </div>
 
       <div className="flex items-baseline gap-3 my-2">
-        {product.salePrice ? (
+        {product.price ? (
           <>
-            <span className="text-3xl font-bold text-gray-900">${product.salePrice.toFixed(2)}</span>
+            <span className="text-3xl font-bold text-gray-900">${product.price.toFixed(2)}</span>
             <span className="text-lg text-gray-400 line-through">${product.price.toFixed(2)}</span>
             <span className="bg-pink-600 text-white text-sm font-semibold px-3 py-1 rounded-full">-{product.discount}%</span>
           </>
@@ -250,8 +235,8 @@ const ShopPage: React.FC = () => {
             }>
               {products.map((product) => (
                 view === 'grid' 
-                  ? <ProductGridCard key={product.id} product={product} />
-                  : <ProductListCard key={product.id} product={product} />
+                  ? <ProductGridCard key={product._id} product={product} />
+                  : <ProductListCard key={product._id} product={product} />
               ))}
             </div>
 

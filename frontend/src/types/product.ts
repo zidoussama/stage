@@ -21,5 +21,6 @@ _id: string;
   __v?: number;
   tag?: 'SOLDE' | 'NEW' | string;
   isFeatured?: boolean;
+  rating: number;
 }
 

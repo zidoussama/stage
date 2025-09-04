@@ -34,3 +34,16 @@ const useProductById = (id: string) => {
 };
 
 export default useProductById;
+
+const getAllProducts = async () => {
+  try {
+    const res = await axios.get(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/products`
+    );
+    return res.data;
+  } catch (error) {
+    console.error('Error fetching all products:', error);
+    throw error;
+  }
+};
+export { getAllProducts };
