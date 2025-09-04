@@ -3,9 +3,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { BiChevronDown } from 'react-icons/bi';
 import { FaSearch } from 'react-icons/fa';
-import useCategories from '../app/Accueil/hooks/useCategories'; // Adjust path as needed
+import useCategories from '../app/Accueil/hooks/useCategories';
 import { useRouter } from 'next/navigation';
-import { Category } from '@/types/category'; // Adjust path as needed
+import { Category } from '@/types/category';
 
 type SearchBarProps = {
   className?: string;
@@ -17,6 +17,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ className }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const dropdownListRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   // Close dropdown if clicking outside
@@ -27,22 +28,28 @@ const SearchBar: React.FC<SearchBarProps> = ({ className }) => {
       }
     };
 
-    if (dropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
+  }, []);
+
+  // Debug: Check if dropdown is rendering but not visible
+  useEffect(() => {
+    if (dropdownOpen && dropdownListRef.current) {
+      console.log('Dropdown rendered at:', dropdownListRef.current.getBoundingClientRect());
+    }
   }, [dropdownOpen]);
 
-  // Handle selecting a category
   const handleCategorySelect = (name: string) => {
     setSelectedCategory(name);
     setDropdownOpen(false);
-    console.log('Category selected:', name); // Debugging log
   };
 
-  // Handle form submission or search button click
+  const toggleDropdown = () => {
+    setDropdownOpen(prev => !prev);
+  };
+
   const handleSearch = () => {
     const params = new URLSearchParams();
 
@@ -50,36 +57,72 @@ const SearchBar: React.FC<SearchBarProps> = ({ className }) => {
       params.append('q', searchText.trim());
     }
 
-    // Only append the category parameter if a specific category is selected
     if (selectedCategory !== 'Tout les catégories') {
       params.append('category', selectedCategory);
     }
 
     const queryString = params.toString();
     const targetPath = `/filter${queryString ? `?${queryString}` : ''}`;
-
-    console.log('Navigating to:', targetPath); // Debugging log
     router.push(targetPath);
   };
 
   return (
-    <div className={`relative flex items-center border border-gray-300 rounded-full overflow-hidden shadow-sm bg-white ${className}`}>
-      {/* Dropdown toggle */}
-      <div
-        ref={dropdownRef}
-        onClick={() => setDropdownOpen(!dropdownOpen)}
-        className="flex items-center px-4 py-2 border-r border-gray-300 gap-1 text-gray-700 text-sm cursor-pointer select-none whitespace-nowrap relative"
-        aria-haspopup="listbox"
-        aria-expanded={dropdownOpen}
-        aria-label="Select category"
-      >
-        <span className="truncate max-w-[130px]">{selectedCategory}</span>
-        <BiChevronDown size={20} />
+    <div className={`relative ${className}`}>
+      {/* Main search container - now without overflow-hidden */}
+      <div className="flex items-center border border-gray-300 rounded-full shadow-sm bg-white">
+        {/* Dropdown toggle */}
+        <div
+          ref={dropdownRef}
+          onClick={toggleDropdown}
+          className="flex items-center px-4 py-2 border-r border-gray-300 gap-1 text-gray-700 text-sm cursor-pointer select-none whitespace-nowrap relative"
+          aria-haspopup="listbox"
+          aria-expanded={dropdownOpen}
+          aria-label="Select category"
+        >
+          <span className="truncate max-w-[130px]">{selectedCategory}</span>
+          <BiChevronDown 
+            size={20} 
+            className={`transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`}
+          />
+        </div>
+
+        {/* Search input */}
+        <input
+          type="text"
+          placeholder="Trouvez votre rêve ici"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          className="flex-1 px-4 py-2 text-sm outline-none bg-transparent"
+          aria-label="Search products"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              handleSearch();
+            }
+          }}
+        />
+
+        {/* Search button */}
+        <button
+          onClick={handleSearch}
+          className="bg-pink-500 hover:bg-pink-600 transition-colors duration-200 text-white p-3 rounded-r-full flex items-center justify-center"
+          aria-label="Search"
+        >
+          <FaSearch size={16} />
+        </button>
       </div>
 
-      {/* Dropdown list */}
+      {/* Dropdown list - moved outside the main container */}
       {dropdownOpen && (
-        <div className="absolute top-full left-0 z-[9999] mt-1 w-56 bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto">
+        <div 
+          ref={dropdownListRef}
+          className="absolute top-full left-0 z-50 mt-1 w-56 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+          style={{ 
+            // Force visibility for debugging
+            border: '1px solid #e5e7eb',
+            opacity: 1,
+            display: 'block',
+          }}
+        >
           {/* Default option */}
           <div
             onClick={() => handleCategorySelect('Tout les catégories')}
@@ -101,11 +144,10 @@ const SearchBar: React.FC<SearchBarProps> = ({ className }) => {
           )}
 
           {/* Category list */}
-          {!loading &&
-            !error &&
+          {!loading && !error && categories.length > 0 && (
             categories.map((category: Category, index: number) => (
               <div
-                key={category.id ?? category.name ?? `category-${index}`} // Added fallback for key
+                key={category.id ?? category.name ?? `category-${index}`}
                 onClick={() => handleCategorySelect(category.name)}
                 className={`px-4 py-2 cursor-pointer text-sm hover:bg-gray-100 ${
                   selectedCategory === category.name ? 'bg-gray-100 font-semibold' : ''
@@ -113,33 +155,15 @@ const SearchBar: React.FC<SearchBarProps> = ({ className }) => {
               >
                 {category.name}
               </div>
-            ))}
+            ))
+          )}
+
+          {/* Empty state */}
+          {!loading && !error && categories.length === 0 && (
+            <div className="px-4 py-2 text-sm text-gray-500 select-none">Aucune catégorie disponible</div>
+          )}
         </div>
       )}
-
-      {/* Search input */}
-      <input
-        type="text"
-        placeholder="Trouvez votre rêve ici"
-        value={searchText}
-        onChange={(e) => setSearchText(e.target.value)}
-        className="flex-1 px-4 py-2 text-sm outline-none bg-transparent"
-        aria-label="Search products"
-        onKeyDown={(e) => { // Added keydown handler for Enter press
-          if (e.key === 'Enter') {
-            handleSearch();
-          }
-        }}
-      />
-
-      {/* Search button */}
-      <button
-        onClick={handleSearch}
-        className="bg-pink-500 hover:bg-pink-600 transition-colors duration-200 text-white p-3 rounded-r-full flex items-center justify-center"
-        aria-label="Search"
-      >
-        <FaSearch size={16} />
-      </button>
     </div>
   );
 };
