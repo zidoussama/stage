@@ -6,12 +6,26 @@ import React from 'react';
 import { Product } from '@/types/product';
 import Image from 'next/image';
 import { FiHeart, FiMaximize, FiEye } from 'react-icons/fi';
+import { useProductNavigation } from '@/hooks/useProductNavigation';
+import { useBag } from '@/hooks/useBag';
 
 interface Props {
   products: Product[];
 }
 
 const ProductGrid: React.FC<Props> = ({ products }) => {
+  const goToProduct = useProductNavigation();
+  const { addToBag } = useBag();
+  
+  function handleAddToBag(product: any) {
+        addToBag({
+          _id: product._id,
+          name: product.name,
+          price: product.price,
+          categoryof: product.category.name,
+          imageUrl: product.imageUrls[0],
+        });
+      }
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {products.map(product => (
@@ -22,9 +36,9 @@ const ProductGrid: React.FC<Props> = ({ products }) => {
             <button className="p-2 border rounded-full bg-pink-600 text-white"><FiEye size={18} /></button>
           </div>
           <div className="relative mb-4">
-            <Image src={product.imageUrls[0]} alt={product.name} width={250} height={250} className="w-full h-auto object-contain rounded-md" />
+            <Image onClick={() => goToProduct(product)} src={product.imageUrls[0]} alt={product.name} width={250} height={250} className="w-full h-auto object-contain rounded-md" />
             <div className="absolute bottom-0 left-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button className="w-full bg-gray-800 text-white font-semibold py-2.5 rounded-lg">ADD TO BAG</button>
+              <button className="w-full bg-gray-800 text-white font-semibold py-2.5 rounded-lg" onClick={() => handleAddToBag(product)}>ADD TO BAG</button>
             </div>
           </div>
           <div className="text-center mt-auto">
