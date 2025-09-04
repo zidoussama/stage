@@ -116,15 +116,11 @@ export default function NewInStoreGrid() {
               <p className="text-center text-sm font-medium text-gray-800 mb-1">{product.name}</p>
 
               <div className="flex justify-center items-center gap-2 text-sm mb-4">
-                <span className="font-bold">{product.price.toFixed(2)}DT</span>
+                <span className="font-bold">{product.price.toFixed(2)} DT</span>
                 {product.oldPrice && (
                   <span className="line-through text-gray-400 text-xs">{product.oldPrice}DT</span>
                 )}
-                {product.discount && (
-                  <span className="bg-pink-100 text-pink-600 text-[10px] px-2 py-[2px] rounded-full font-bold">
-                    -{product.discount}%
-                  </span>
-                )}
+                
               </div>
 
               <button onClick={() => handleAddToBag(product)} className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[85%] py-2 bg-black text-white text-xs rounded-full opacity-0 group-hover:opacity-100 transition duration-300">

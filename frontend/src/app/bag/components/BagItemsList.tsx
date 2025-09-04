@@ -21,7 +21,7 @@ export const BagItemsList = ({ items }: BagItemsListProps) => {
                                 <div className="sm:col-gap-5 sm:grid sm:grid-cols-2">
                                     <div className="pr-8 sm:pr-5"><p className="text-base font-semibold text-gray-900">{item.name}</p><p className="mx-0 mt-1 mb-0 text-sm text-gray-400">{item.categoryof}</p></div>
                                     <div className="mt-4 flex items-end justify-between sm:mt-0 sm:items-start sm:justify-end">
-                                        <p className="shrink-0 w-20 text-base font-semibold text-gray-900 sm:order-2 sm:ml-8 sm:text-right">${(item.price * item.quantity).toFixed(2)}</p>
+                                        <p className="shrink-0 w-20 text-base font-semibold text-gray-900 sm:order-2 sm:ml-8 sm:text-right">{(item.price * item.quantity).toFixed(2)} DT</p>
                                         <div className="sm:order-1"><div className="mx-auto flex h-8 items-stretch text-gray-600"><button className="flex items-center justify-center rounded-l-md bg-gray-200 px-4 transition hover:bg-black hover:text-white">-</button><div className="flex w-full items-center justify-center bg-gray-100 px-4 text-xs uppercase transition">{item.quantity}</div><button className="flex items-center justify-center rounded-r-md bg-gray-200 px-4 transition hover:bg-black hover:text-white">+</button></div></div>
                                     </div>
                                 </div>

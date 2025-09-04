@@ -110,7 +110,6 @@ export default function RegisterPage() {
             href="/forgot-password"
             className="text-sm text-pink-600 hover:underline"
           >
-            Forgot password?
           </Link>
         </div>
 

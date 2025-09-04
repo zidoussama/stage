@@ -11,17 +11,17 @@ export const OrderSummary = ({ subtotal, shipping, total }: OrderSummaryProps) =
             <div className="space-y-3">
                 <div className="flex items-center justify-between">
                     <p className="text-sm text-gray-500">Subtotal</p>
-                    <p className="text-base font-semibold text-gray-900">${subtotal.toFixed(2)}</p>
+                    <p className="text-base font-semibold text-gray-900">{subtotal.toFixed(2)} DT</p>
                 </div>
                 <div className="flex items-center justify-between">
                     <p className="text-sm text-gray-500">Shipping</p>
-                    <p className="text-base font-semibold text-gray-900">${shipping.toFixed(2)}</p>
+                    <p className="text-base font-semibold text-gray-900">{shipping.toFixed(2)} DT</p>
                 </div>
             </div>
             <div className="mt-4 pt-4 border-t">
                 <div className="flex items-center justify-between">
                     <p className="text-base font-medium text-gray-900">Total</p>
-                    <p className="text-xl font-bold text-gray-900">${total.toFixed(2)}</p>
+                    <p className="text-xl font-bold text-gray-900">{total.toFixed(2)} DT</p>
                 </div>
             </div>
             <div className="mt-6">

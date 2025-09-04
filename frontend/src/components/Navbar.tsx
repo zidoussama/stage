@@ -8,7 +8,7 @@ import {
   FaSearch,
   FaShoppingCart,
   FaRegCommentDots,
-  FaBell,
+  FaSignOutAlt,
   FaUser,
 } from 'react-icons/fa';
 import Image from 'next/image';
@@ -94,6 +94,10 @@ export default function Navbar() {
       router.push("/sign-in");
     }
   };
+  const handleLogout = () => {
+    Cookies.remove("token");
+    router.push("/sign-in");
+  };
 
   return (
     <header className="w-full">
@@ -126,7 +130,7 @@ export default function Navbar() {
           >
             <FaShoppingCart className="cursor-pointer" aria-label="Shopping Cart" onClick={() => router.push('/bag')} />
             <FaRegCommentDots className="cursor-pointer" aria-label="Comments" />
-            <FaBell className="cursor-pointer" aria-label="Notifications" />
+            <FaSignOutAlt className="cursor-pointer" aria-label="Sign Out" onClick={handleLogout} />
             <FaUser className="w-8 h-8 bg-gray-200 rounded-full cursor-pointer border" aria-label="User Profile" onClick={handleNavigation} />
           </div>
         </div>
