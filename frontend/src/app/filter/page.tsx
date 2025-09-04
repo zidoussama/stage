@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { FiList, FiGrid, FiChevronDown, FiChevronLeft, FiChevronRight, FiX } from 'react-icons/fi';
+import { FiList, FiGrid, FiChevronDown, FiX } from 'react-icons/fi';
 import { Product } from '@/types/product';
 import { getAllProducts } from '@/hooks/useProduct';
 import FilterSidebar from '@/components/filter';
 import ProductGrid from './components/ProductGrid';
 import ProductList from './components/ProductList';
+import Pagination from './components/Pagination';
 
 interface Filters {
   genre: string[];
@@ -32,6 +33,8 @@ const ShopPage: React.FC = () => {
   const [view, setView] = useState<'list' | 'grid'>('list');
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [products, setProducts] = useState<Product[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+const productsPerPage = view === 'grid' ? 16 : 8;
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -62,6 +65,11 @@ const ShopPage: React.FC = () => {
     if (key === 'price' || !Array.isArray(values)) return [];
     return values.map(v => ({ type: key, value: v }));
   });
+
+  // Pagination logic
+  const totalPages = Math.ceil(products.length / productsPerPage);
+  const startIdx = (currentPage - 1) * productsPerPage;
+  const paginatedProducts = products.slice(startIdx, startIdx + productsPerPage);
 
   return (
     <div className="bg-white font-sans">
@@ -108,18 +116,17 @@ const ShopPage: React.FC = () => {
             </div>
 
             {view === 'grid' ? (
-              <ProductGrid products={products} />
+              <ProductGrid products={paginatedProducts} />
             ) : (
-              <ProductList products={products} />
+              <ProductList products={paginatedProducts} />
             )}
 
             <div className="flex justify-center items-center mt-8">
-              <nav className="flex items-center gap-2">
-                <button className="p-2 opacity-50"><FiChevronLeft /></button>
-                <button className="w-8 h-8 rounded-md bg-gray-800 text-white font-semibold">1</button>
-                <button className="w-8 h-8 rounded-md hover:bg-gray-200 font-semibold">2</button>
-                <button className="p-2"><FiChevronRight /></button>
-              </nav>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
             </div>
           </div>
         </div>
