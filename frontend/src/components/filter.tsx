@@ -180,26 +180,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
           </div>
         </FilterSection>
 
-        {/* --- Price --- */}
-<FilterSection title="Prix">
-  <PriceSlider value={filters.price} onChange={onPriceChange} />
-</FilterSection>
-
-{/* --- Rating --- */}
-<FilterSection title="Rating">
-  <div className="space-y-3">
-    {[5, 4, 3, 2, 1].map((starCount) => (
-      <RatingRow
-        key={starCount}
-        stars={starCount}
-        id={`rating-${starCount}`}
-        checked={filters.rating.includes(starCount)}
-        onChange={() => onFilterChange('rating', starCount)}
-      />
-    ))}
-  </div>
-</FilterSection>
-
+       
 
         {/* --- Type de peau --- */}
         <FilterSection title="Type de peau">
