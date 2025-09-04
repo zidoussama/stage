@@ -5,7 +5,6 @@ import {
   FaFireAlt,
   FaBolt,
   FaPlus,
-  FaSearch,
   FaShoppingCart,
   FaRegCommentDots,
   FaSignOutAlt,
@@ -18,27 +17,7 @@ import { MdLocationOn } from 'react-icons/md';
 import { useRouter } from 'next/navigation';
 import logo from '@/assets/logo/logopar.png';
 import Cookies from 'js-cookie'
-
-type SearchBarProps = {
-  className?: string;
-};
-
-const SearchBar: React.FC<SearchBarProps> = ({ className }) => (
-  <div className={`flex items-center border rounded-full overflow-hidden shadow-sm bg-gray-100 ${className}`}>
-    <div className="flex items-center px-3 border-r gap-1 text-gray-600 text-sm cursor-pointer">
-      <span>Tout les catégories</span>
-      <BiChevronDown size={18} />
-    </div>
-    <input
-      type="text"
-      placeholder="Trouvez votre rêve ici"
-      className="flex-1 px-3 py-2 bg-transparent outline-none text-sm"
-    />
-    <button className="bg-pink-500 text-white p-2 rounded-r" aria-label="Search">
-      <FaSearch />
-    </button>
-  </div>
-);
+import SearchBar from './SearchBar'; // Ensure this path is correct
 
 type MenuButtonProps = {
   icon?: React.ReactNode;
@@ -82,11 +61,13 @@ export default function Navbar() {
       case 'Nous contacter':
         router.push('/contact');
         break;
+      // Add more cases for other buttons if they navigate to different routes
       default:
         console.log(`Clicked ${buttonText}`);
     }
     setMobileMenuOpen(false); // Optional: close mobile menu on click
   };
+
   const handleNavigation = () => {
     if (Cookies.get("token")) {
       router.push("/profile");
@@ -94,6 +75,7 @@ export default function Navbar() {
       router.push("/sign-in");
     }
   };
+
   const handleLogout = () => {
     Cookies.remove("token");
     router.push("/sign-in");
@@ -188,7 +170,7 @@ export default function Navbar() {
             <MenuButton icon={null} text="Nous contacter" bgColor="bg-white" onClick={() => handleButtonClick('Nous contacter')} />
             <MenuButton icon={null} text="Aide !" bgColor="bg-white" onClick={() => handleButtonClick('Aide !')} />
           </div>
-          <SearchBar />
+          <SearchBar className="mt-4" /> {/* Added margin for mobile search bar */}
         </div>
       </div>
     </header>
