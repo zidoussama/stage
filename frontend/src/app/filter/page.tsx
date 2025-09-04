@@ -16,6 +16,7 @@ interface Filters {
   typePeau: string[];
   concern: string[];
   ingredients: string[];
+  size: string[];
   price: number;
 }
 
@@ -26,6 +27,7 @@ const initialFilters: Filters = {
   typePeau: [],
   concern: [],
   ingredients: [],
+  size: [],
   price: 500,
 };
 
@@ -34,7 +36,7 @@ const ShopPage: React.FC = () => {
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [products, setProducts] = useState<Product[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-const productsPerPage = view === 'grid' ? 16 : 8;
+  const productsPerPage = view === 'grid' ? 16 : 8;
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -61,9 +63,25 @@ const productsPerPage = view === 'grid' ? 16 : 8;
     setFilters(initialFilters);
   };
 
+  // Map keys to readable labels for Résultat trouvé
+  const filterLabels: Record<string, string> = {
+    genre: 'Genre',
+    brands: 'Brands',
+    rating: 'Rating',
+    typePeau: 'Type de peau',
+    concern: 'Concern',
+    ingredients: 'Ingredients',
+    size: 'Size',
+  };
+
+  // Build active filters for display
   const activeFilters = Object.entries(filters).flatMap(([key, values]) => {
     if (key === 'price' || !Array.isArray(values)) return [];
-    return values.map(v => ({ type: key, value: v }));
+    return values.map(v => ({
+      type: key,
+      label: filterLabels[key] || key,
+      value: v,
+    }));
   });
 
   // Pagination logic
@@ -71,20 +89,36 @@ const productsPerPage = view === 'grid' ? 16 : 8;
   const startIdx = (currentPage - 1) * productsPerPage;
   const paginatedProducts = products.slice(startIdx, startIdx + productsPerPage);
 
+  // Dynamic filter options from products
+  const options = {
+    genre: [...new Set(products.map(p => p.genre))],
+    brands: [...new Set(products.map(p => p.Brand))],
+    rating: [1, 2, 3, 4, 5],
+    typePeau: [...new Set(products.map(p => p.typedepeau).flat())],
+    concern: [...new Set(products.map(p => p.concern).flat())],
+    ingredients: [...new Set(products.map(p => p.ingredients).flat())],
+    size: [...new Set(products.map(p => p.size).flat())],
+  };
+
   return (
     <div className="bg-white font-sans">
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold text-gray-900 mb-8">Makeups</h1>
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Sidebar */}
           <div className="lg:col-span-1">
-            <FilterSidebar 
+            <FilterSidebar
               filters={filters}
               onFilterChange={handleFilterChange}
               onPriceChange={handlePriceChange}
               onClearAll={handleClearAll}
+              options={options}
             />
           </div>
+
+          {/* Main content */}
           <div className="lg:col-span-3 flex flex-col gap-6">
+            {/* Résultat trouvé */}
             <div className="bg-gray-50 rounded-lg p-4">
               <h2 className="text-xl font-semibold text-gray-800">Résultat trouvé</h2>
               <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
@@ -92,14 +126,21 @@ const productsPerPage = view === 'grid' ? 16 : 8;
                   {activeFilters.length > 0 ? (
                     <>
                       <span className="font-semibold text-gray-600">Filtres actifs:</span>
-                      {activeFilters.map(({ type, value }) => (
-                        <span key={`${type}-${value}`} className="flex items-center gap-1 bg-white pl-3 pr-2 py-1 rounded-full">
+                      {activeFilters.map(({ type, label, value }) => (
+                        <span
+                          key={`${type}-${value}`}
+                          className="flex items-center gap-1 bg-white pl-3 pr-2 py-1 rounded-full"
+                        >
                           {type === 'rating' ? `${value} Stars` : value}
-                          <button onClick={() => handleFilterChange(type, value)}><FiX size={16} /></button>
+                          <button onClick={() => handleFilterChange(type, value)}>
+                            <FiX size={16} />
+                          </button>
                         </span>
                       ))}
                     </>
-                  ) : <span className="text-gray-500">Aucun filtre actif</span>}
+                  ) : (
+                    <span className="text-gray-500">Aucun filtre actif</span>
+                  )}
                 </div>
                 <div className="flex items-center gap-4">
                   <button className="flex items-center gap-2 text-sm text-gray-700">
@@ -107,26 +148,34 @@ const productsPerPage = view === 'grid' ? 16 : 8;
                     <FiChevronDown />
                   </button>
                   <div className="flex items-center border rounded-lg overflow-hidden">
-                    <button onClick={() => setView('list')} className={`p-2 ${view === 'list' ? 'bg-pink-100 text-pink-600' : 'bg-white'}`}><FiList /></button>
-                    <button onClick={() => setView('grid')} className={`p-2 ${view === 'grid' ? 'bg-pink-100 text-pink-600' : 'bg-white'}`}><FiGrid /></button>
+                    <button
+                      onClick={() => setView('list')}
+                      className={`p-2 ${view === 'list' ? 'bg-pink-100 text-pink-600' : 'bg-white'}`}
+                    >
+                      <FiList />
+                    </button>
+                    <button
+                      onClick={() => setView('grid')}
+                      className={`p-2 ${view === 'grid' ? 'bg-pink-100 text-pink-600' : 'bg-white'}`}
+                    >
+                      <FiGrid />
+                    </button>
                   </div>
                 </div>
               </div>
               <p className="mt-4 text-sm text-gray-500">{products.length} produits trouvés</p>
             </div>
 
+            {/* Products */}
             {view === 'grid' ? (
               <ProductGrid products={paginatedProducts} />
             ) : (
               <ProductList products={paginatedProducts} />
             )}
 
+            {/* Pagination */}
             <div className="flex justify-center items-center mt-8">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={setCurrentPage}
-              />
+              <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
             </div>
           </div>
         </div>

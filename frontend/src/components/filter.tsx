@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { ChevronDown, Star } from 'lucide-react';
-import { getAllBrand } from '../hooks/useBrand'; // ✅ adjust path if needed
+import { useState } from 'react';
+import useProductData from '../hooks/useFilter';
+import { ChevronDown } from 'lucide-react';
 
 // --- Reusable Sub-components (unchanged) ---
 interface FilterSectionProps {
@@ -58,84 +58,71 @@ const CheckboxItem: React.FC<CheckboxItemProps> = ({ label, id, checked, onChang
   </label>
 );
 
-// --- PriceSlider + RatingRow unchanged ---
-// (I’ll keep them as you wrote above)
-
-// --- Sidebar Component ---
-
-interface FilterSidebarProps {
-  filters: {
-    genre: string[];
-    brands: string[];
-    price: number;
-    rating: number[];
-    typePeau: string[];
-    concern: string[];
-    ingredients: string[];
-  };
-  onFilterChange: (section: string, value: string | number) => void;
-  onPriceChange: (value: number) => void;
-  onClearAll: () => void;
+// --- Filter Sidebar ---
+interface FilterState {
+  genre: string[];
+  skinType: string[];
+  concern: string[];
+  ingredient: string[];
+  size: string[];
 }
 
-const FilterSidebar: React.FC<FilterSidebarProps> = ({
-  filters,
-  onFilterChange,
-  onPriceChange,
-  onClearAll,
-}) => {
-  const [brands, setBrands] = useState<string[]>([]);
-  const [loadingBrands, setLoadingBrands] = useState(true);
+const FilterSidebar = () => {
+  const {
+    uniqueGenres,
+    uniqueSkinTypes,
+    uniqueConcerns,
+    uniqueIngredients,
+    uniqueSizes,
+    loading,
+    error
+  } = useProductData();
 
-  // ✅ Fetch brands from API
-  useEffect(() => {
-    const fetchBrands = async () => {
-      try {
-        const data = await getAllBrand();
-        // adapt depending on API shape: if it's [{id, name}], map to names
-        setBrands(data.map((b: any) => b.name));
-      } catch (error) {
-        console.error('Error fetching brands:', error);
-      } finally {
-        setLoadingBrands(false);
+  const [filters, setFilters] = useState<FilterState>({
+    genre: [],
+    skinType: [],
+    concern: [],
+    ingredient: [],
+    size: []
+  });
+
+  const handleFilterChange = (category: keyof FilterState, value: string) => {
+    setFilters(prev => {
+      const currentFilters = [...prev[category]];
+      const index = currentFilters.indexOf(value);
+
+      if (index > -1) {
+        currentFilters.splice(index, 1);
+      } else {
+        currentFilters.push(value);
       }
-    };
-    fetchBrands();
-  }, []);
 
-  const sections = {
-    typePeau: [
-      'Normal Skin',
-      'Dry Skin',
-      'Oily Skin',
-      'Combination Skin',
-      'Sensitive Skin',
-    ],
-    concern: [
-      'Acne',
-      'Aging',
-      'Dull Skin',
-      'Uneven Skin Tone',
-      'Dehydrated Skin',
-      'Eye Bags',
-      'Pregnancy',
-    ],
-    ingredients: [
-      'Niacinamide',
-      'Retinol',
-      'Glycolic Acid',
-      'Citric Acid',
-      'Hyaluronic Acid',
-      'Ceramide',
-    ],
+      return {
+        ...prev,
+        [category]: currentFilters
+      };
+    });
   };
+
+  const handleClearAll = () => {
+    setFilters({
+      genre: [],
+      skinType: [],
+      concern: [],
+      ingredient: [],
+      size: []
+    });
+  };
+
+  if (loading) return <div className="text-gray-500">Loading filters...</div>;
+  if (error) return <div className="text-red-500">Error: {error.message}</div>;
 
   return (
     <aside className="w-full bg-white rounded-lg shadow-sm border border-gray-200 p-6 self-start">
       <div className="flex justify-between items-center pb-4 border-b border-gray-200">
         <h2 className="text-xl font-bold text-gray-900">Filtrage</h2>
         <button
-          onClick={onClearAll}
+          onClick={handleClearAll}
           className="text-sm text-gray-500 hover:text-pink-600 transition-colors"
         >
           Effacer tous
@@ -143,85 +130,76 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
       </div>
 
       <div className="divide-y divide-gray-200">
-        {/* --- Genre --- */}
+        {/* Genre Filter */}
         <FilterSection title="Genre">
           <div className="space-y-3">
-            <CheckboxItem
-              label="Male"
-              id="male"
-              checked={filters.genre.includes('Male')}
-              onChange={() => onFilterChange('genre', 'Male')}
-            />
-            <CheckboxItem
-              label="Female"
-              id="female"
-              checked={filters.genre.includes('Female')}
-              onChange={() => onFilterChange('genre', 'Female')}
-            />
+            {uniqueGenres.map(genre => (
+              <CheckboxItem
+                key={genre}
+                id={genre}
+                label={genre}
+                checked={filters.genre.includes(genre)}
+                onChange={() => handleFilterChange('genre', genre)}
+              />
+            ))}
           </div>
         </FilterSection>
 
-        {/* --- Brands from API --- */}
-        <FilterSection title="Brands">
-          <div className="space-y-3">
-            {loadingBrands ? (
-              <p className="text-sm text-gray-500">Chargement...</p>
-            ) : (
-              brands.map((item) => (
-                <CheckboxItem
-                  key={item}
-                  id={item}
-                  label={item}
-                  checked={filters.brands.includes(item)}
-                  onChange={() => onFilterChange('brands', item)}
-                />
-              ))
-            )}
-          </div>
-        </FilterSection>
-
-       
-
-        {/* --- Type de peau --- */}
+        {/* Skin Type Filter */}
         <FilterSection title="Type de peau">
           <div className="space-y-3">
-            {sections.typePeau.map((item) => (
+            {uniqueSkinTypes.map(skinType => (
               <CheckboxItem
-                key={item}
-                id={item}
-                label={item}
-                checked={filters.typePeau.includes(item)}
-                onChange={() => onFilterChange('typePeau', item)}
+                key={skinType}
+                id={skinType}
+                label={skinType}
+                checked={filters.skinType.includes(skinType)}
+                onChange={() => handleFilterChange('skinType', skinType)}
               />
             ))}
           </div>
         </FilterSection>
 
-        {/* --- Concern --- */}
+        {/* Concern Filter */}
         <FilterSection title="Concern">
           <div className="space-y-3">
-            {sections.concern.map((item) => (
+            {uniqueConcerns.map(concern => (
               <CheckboxItem
-                key={item}
-                id={item}
-                label={item}
-                checked={filters.concern.includes(item)}
-                onChange={() => onFilterChange('concern', item)}
+                key={concern}
+                id={concern}
+                label={concern}
+                checked={filters.concern.includes(concern)}
+                onChange={() => handleFilterChange('concern', concern)}
               />
             ))}
           </div>
         </FilterSection>
 
-        {/* --- Ingredients --- */}
+        {/* Ingredient Filter */}
         <FilterSection title="Ingredients">
           <div className="space-y-3">
-            {sections.ingredients.map((item) => (
+            {uniqueIngredients.map(ingredient => (
               <CheckboxItem
-                key={item}
-                id={item}
-                label={item}
-                checked={filters.ingredients.includes(item)}
-                onChange={() => onFilterChange('ingredients', item)}
+                key={ingredient}
+                id={ingredient}
+                label={ingredient}
+                checked={filters.ingredient.includes(ingredient)}
+                onChange={() => handleFilterChange('ingredient', ingredient)}
+              />
+            ))}
+          </div>
+        </FilterSection>
+
+        {/* Size Filter */}
+        <FilterSection title="Size">
+          <div className="space-y-3">
+            {uniqueSizes.map(size => (
+              <CheckboxItem
+                key={size}
+                id={size}
+                label={size}
+                checked={filters.size.includes(size)}
+                onChange={() => handleFilterChange('size', size)}
               />
             ))}
           </div>
