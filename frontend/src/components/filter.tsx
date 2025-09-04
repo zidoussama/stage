@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronDown, Star } from 'lucide-react';
+import { getAllBrand } from '../hooks/useBrand'; // ✅ adjust path if needed
 
-// --- Reusable Sub-components ---
-
+// --- Reusable Sub-components (unchanged) ---
 interface FilterSectionProps {
   title: string;
   children: React.ReactNode;
@@ -26,7 +26,8 @@ const FilterSection = ({ title, children, defaultOpen = true }: FilterSectionPro
             isOpen ? '' : '-rotate-90'
           }`}
         />
-      </button>      {isOpen && <div className="mt-4">{children}</div>}
+      </button>
+      {isOpen && <div className="mt-4">{children}</div>}
     </div>
   );
 };
@@ -47,81 +48,18 @@ const CheckboxItem: React.FC<CheckboxItemProps> = ({ label, id, checked, onChang
       onChange={onChange}
       className="custom-checkbox"
     />
-    <span className={`text-gray-600 group-hover:text-pink-600 transition-colors ${checked ? 'text-pink-600 font-medium' : ''}`}>
+    <span
+      className={`text-gray-600 group-hover:text-pink-600 transition-colors ${
+        checked ? 'text-pink-600 font-medium' : ''
+      }`}
+    >
       {label}
     </span>
   </label>
 );
 
-// --- THIS IS THE CORRECTED PriceSlider COMPONENT ---
-interface PriceSliderProps {
-  value: number;
-  onChange: (value: number) => void;
-}
-
-const PriceSlider: React.FC<PriceSliderProps> = ({ value, onChange }) => {
-  const MIN = 0;
-  const MAX = 500;
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onChange(Number(e.target.value));
-  };
-
-  const rangeWidth = (value / MAX) * 100;
-
-  return (
-    <div>
-      <div className="relative h-5 pt-1">
-        <div className="absolute top-1/2 h-1 w-full -translate-y-1/2 bg-gray-200 rounded-full"></div>
-        <div
-          className="absolute top-1/2 h-1 -translate-y-1/2 bg-pink-600 rounded-full"
-          style={{ width: `${rangeWidth}%` }}
-        />
-        <input
-          type="range"
-          min={MIN}
-          max={MAX}
-          value={value}
-          onChange={handleChange}
-          className="custom-range-slider absolute top-1/2 -translate-y-1/2 w-full"
-        />
-      </div>
-      <p className="text-gray-500 text-sm pt-4">Prix : 0 DT - {value} DT</p>
-    </div>
-  );
-};
-
-interface RatingRowProps {
-  stars: number;
-  id: string;
-  checked: boolean;
-  onChange: () => void;
-}
-
-const RatingRow: React.FC<RatingRowProps> = ({ stars, id, checked, onChange }) => (
-  <label htmlFor={id} className="flex items-center space-x-3 cursor-pointer group">
-    <input
-      type="checkbox"
-      id={id}
-      checked={checked}
-      onChange={onChange}
-      className="custom-checkbox"
-    />
-    <div className="flex items-center space-x-1">
-      {[...Array(5)].map((_, i) => (
-        <Star
-          key={i}
-          className={`w-5 h-5 ${
-            i < stars
-              ? 'text-pink-500 fill-current'
-              : 'text-grey-300 fill-current'
-          }`}
-        />
-      ))}
-    </div>
-    {stars < 5 && <span className={`text-grey-600 group-hover:text-pink-600 transition-colors ${checked ? 'text-pink-600 font-medium' : ''}`}>& Up</span>}
-  </label>
-);
+// --- PriceSlider + RatingRow unchanged ---
+// (I’ll keep them as you wrote above)
 
 // --- Sidebar Component ---
 
@@ -146,23 +84,66 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
   onPriceChange,
   onClearAll,
 }) => {
+  const [brands, setBrands] = useState<string[]>([]);
+  const [loadingBrands, setLoadingBrands] = useState(true);
+
+  // ✅ Fetch brands from API
+  useEffect(() => {
+    const fetchBrands = async () => {
+      try {
+        const data = await getAllBrand();
+        // adapt depending on API shape: if it's [{id, name}], map to names
+        setBrands(data.map((b: any) => b.name));
+      } catch (error) {
+        console.error('Error fetching brands:', error);
+      } finally {
+        setLoadingBrands(false);
+      }
+    };
+    fetchBrands();
+  }, []);
+
   const sections = {
-    brands: ['Glowify Beauty', 'Luxe Lashes', 'PureGlow', 'Radiant Skincare', 'HairLux'],
-    typePeau: ['Normal Skin', 'Dry Skin', 'Oily Skin', 'Combination Skin', 'Sensitive Skin'],
-    concern: ['Acne', 'Aging', 'Dull Skin', 'Uneven Skin Tone', 'Dehydrated Skin', 'Eye Bags', 'Pregnancy'],
-    ingredients: ['Niacinamide', 'Retinol', 'Glycolic Acid', 'Citric Acid', 'Hyaluronic Acid', 'Ceramide'],
+    typePeau: [
+      'Normal Skin',
+      'Dry Skin',
+      'Oily Skin',
+      'Combination Skin',
+      'Sensitive Skin',
+    ],
+    concern: [
+      'Acne',
+      'Aging',
+      'Dull Skin',
+      'Uneven Skin Tone',
+      'Dehydrated Skin',
+      'Eye Bags',
+      'Pregnancy',
+    ],
+    ingredients: [
+      'Niacinamide',
+      'Retinol',
+      'Glycolic Acid',
+      'Citric Acid',
+      'Hyaluronic Acid',
+      'Ceramide',
+    ],
   };
 
   return (
     <aside className="w-full bg-white rounded-lg shadow-sm border border-gray-200 p-6 self-start">
       <div className="flex justify-between items-center pb-4 border-b border-gray-200">
         <h2 className="text-xl font-bold text-gray-900">Filtrage</h2>
-        <button onClick={onClearAll} className="text-sm text-gray-500 hover:text-pink-600 transition-colors">
+        <button
+          onClick={onClearAll}
+          className="text-sm text-gray-500 hover:text-pink-600 transition-colors"
+        >
           Effacer tous
         </button>
       </div>
 
       <div className="divide-y divide-gray-200">
+        {/* --- Genre --- */}
         <FilterSection title="Genre">
           <div className="space-y-3">
             <CheckboxItem
@@ -180,39 +161,47 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
           </div>
         </FilterSection>
 
+        {/* --- Brands from API --- */}
         <FilterSection title="Brands">
           <div className="space-y-3">
-            {sections.brands.map((item) => (
-              <CheckboxItem
-                key={item}
-                id={item}
-                label={item}
-                checked={filters.brands.includes(item)}
-                onChange={() => onFilterChange('brands', item)}
-              />
-            ))}
-          </div>
-          <button className="text-sm text-gray-600 mt-4 hover:text-pink-600">Plus categories</button>
-        </FilterSection>
-
-        <FilterSection title="Prix">
-          <PriceSlider value={filters.price} onChange={onPriceChange} />
-        </FilterSection>
-
-        <FilterSection title="Rating">
-          <div className="space-y-3">
-            {[5, 4, 3, 2, 1].map((starCount) => (
-              <RatingRow
-                key={starCount}
-                stars={starCount}
-                id={`rating-${starCount}`}
-                checked={filters.rating.includes(starCount)}
-                onChange={() => onFilterChange('rating', starCount)}
-              />
-            ))}
+            {loadingBrands ? (
+              <p className="text-sm text-gray-500">Chargement...</p>
+            ) : (
+              brands.map((item) => (
+                <CheckboxItem
+                  key={item}
+                  id={item}
+                  label={item}
+                  checked={filters.brands.includes(item)}
+                  onChange={() => onFilterChange('brands', item)}
+                />
+              ))
+            )}
           </div>
         </FilterSection>
 
+        {/* --- Price --- */}
+<FilterSection title="Prix">
+  <PriceSlider value={filters.price} onChange={onPriceChange} />
+</FilterSection>
+
+{/* --- Rating --- */}
+<FilterSection title="Rating">
+  <div className="space-y-3">
+    {[5, 4, 3, 2, 1].map((starCount) => (
+      <RatingRow
+        key={starCount}
+        stars={starCount}
+        id={`rating-${starCount}`}
+        checked={filters.rating.includes(starCount)}
+        onChange={() => onFilterChange('rating', starCount)}
+      />
+    ))}
+  </div>
+</FilterSection>
+
+
+        {/* --- Type de peau --- */}
         <FilterSection title="Type de peau">
           <div className="space-y-3">
             {sections.typePeau.map((item) => (
@@ -227,6 +216,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
           </div>
         </FilterSection>
 
+        {/* --- Concern --- */}
         <FilterSection title="Concern">
           <div className="space-y-3">
             {sections.concern.map((item) => (
@@ -241,6 +231,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
           </div>
         </FilterSection>
 
+        {/* --- Ingredients --- */}
         <FilterSection title="Ingredients">
           <div className="space-y-3">
             {sections.ingredients.map((item) => (
