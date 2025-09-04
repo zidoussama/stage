@@ -101,11 +101,11 @@ export default function NewInStoreGrid() {
                 </span>
               )}
 
-              <span className="absolute top-3 right-3 text-gray-400 text-sm opacity-0 group-hover:opacity-100 transition duration-200 cursor-pointer hover:text-pink-600">
+              <span  className="absolute top-3 right-3 text-gray-400 text-sm opacity-0 group-hover:opacity-100 transition duration-200 cursor-pointer hover:text-pink-600">
                 ♡
               </span>
 
-              <Image
+              <Image onClick={() => goToProduct(product)}
                 src={product.imageUrls[0]}
                 alt={product.name}
                 width={140}
@@ -115,7 +115,7 @@ export default function NewInStoreGrid() {
 
               <p className="text-center text-sm font-medium text-gray-800 mb-1">{product.name}</p>
 
-              <div className="flex justify-center items-center gap-2 text-sm mb-4">
+              <div  className="flex justify-center items-center gap-2 text-sm mb-4">
                 <span className="font-bold">{product.price.toFixed(2)} DT</span>
                 {product.oldPrice && (
                   <span className="line-through text-gray-400 text-xs">{product.oldPrice}DT</span>
