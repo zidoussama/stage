@@ -1,10 +1,36 @@
+// frontend/src/components/filter.tsx
 'use client';
 
-import { useState } from 'react';
-import useProductData from '../hooks/useFilter';
+import { useState,useEffect } from 'react';
+import useCategories from '@/app/Accueil/hooks/useCategories';
+import { getAllBrand } from '@/hooks/useBrand'; // Adjust path if needed
 import { ChevronDown } from 'lucide-react';
 
-// --- Reusable Sub-components (unchanged) ---
+// Custom hook for brands
+const useBrands = () => {
+  const [brands, setBrands] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchBrands = async () => {
+      try {
+        const data = await getAllBrand();
+        setBrands(data || []);
+      } catch (err: any) {
+        setError(err.message || 'Failed to fetch brands');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBrands();
+  }, []);
+
+  return { brands, loading, error };
+};
+
+// --- Reusable Sub-components ---
 interface FilterSectionProps {
   title: string;
   children: React.ReactNode;
@@ -58,71 +84,104 @@ const CheckboxItem: React.FC<CheckboxItemProps> = ({ label, id, checked, onChang
   </label>
 );
 
-// --- Filter Sidebar ---
-interface FilterState {
-  genre: string[];
-  skinType: string[];
-  concern: string[];
-  ingredient: string[];
-  size: string[];
+// Reusable Checkbox List
+interface CheckboxListProps {
+  items: string[];
+  category: string;
+  filters: any;
+  onFilterChange: (category: string, value: string | number) => void;
+  expanded: Record<string, boolean>;
+  setExpanded: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
 }
 
-const FilterSidebar = () => {
-  const {
-    uniqueGenres,
-    uniqueSkinTypes,
-    uniqueConcerns,
-    uniqueIngredients,
-    uniqueSizes,
-    loading,
-    error
-  } = useProductData();
+const CheckboxList: React.FC<CheckboxListProps> = ({
+  items,
+  category,
+  filters,
+  onFilterChange,
+  expanded,
+  setExpanded
+}) => {
+  const itemsToShow = expanded[category] ? items : items.slice(0, 5);
+  const handleToggleExpand = () => {
+    setExpanded(prev => ({ ...prev, [category]: !prev[category] }));
+  };
 
-  const [filters, setFilters] = useState<FilterState>({
-    genre: [],
-    skinType: [],
-    concern: [],
-    ingredient: [],
-    size: []
+  return (
+    <div className="space-y-3">
+      {itemsToShow.map(item => (
+        <CheckboxItem
+          key={item}
+          id={`${category}-${item}`}
+          label={item}
+          checked={filters[category].includes(item)}
+          onChange={() => onFilterChange(category, item)}
+        />
+      ))}
+      {items.length > 5 && (
+        <button
+          onClick={handleToggleExpand}
+          className={`text-sm font-medium transition-colors ${
+            expanded[category]
+              ? 'text-gray-500 hover:text-gray-700'
+              : 'text-pink-600 hover:text-pink-700'
+          }`}
+        >
+          {expanded[category] ? 'Show Less' : 'Show More'}
+        </button>
+      )}
+    </div>
+  );
+};
+
+// --- Filter Sidebar Props ---
+interface FilterSidebarProps {
+  filters: any;
+  onFilterChange: (type: string, value: string | number) => void;
+  onPriceChange: (price: number) => void;
+  onClearAll: () => void;
+  options: {
+    genre: string[];
+    brands: string[];
+    typePeau: string[];
+    concern: string[];
+    ingredients: string[];
+    size: string[];
+  };
+}
+
+const FilterSidebar: React.FC<FilterSidebarProps> = ({
+  filters,
+  onFilterChange,
+  onPriceChange,
+  onClearAll,
+  options
+}) => {
+  const { categories, loading: catLoading, error: catError } = useCategories();
+  const { brands, loading: brandLoading, error: brandError } = useBrands();
+
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({
+    category: false,
+    genre: false,
+    brands: false,
+    typePeau: false,
+    concern: false,
+    ingredients: false,
+    size: false
   });
 
-  const handleFilterChange = (category: keyof FilterState, value: string) => {
-    setFilters(prev => {
-      const currentFilters = [...prev[category]];
-      const index = currentFilters.indexOf(value);
+  if (catLoading || brandLoading) return <div className="text-gray-500">Loading filters...</div>;
+  if (catError || brandError) return <div className="text-red-500">Error: {catError || brandError}</div>;
 
-      if (index > -1) {
-        currentFilters.splice(index, 1);
-      } else {
-        currentFilters.push(value);
-      }
-
-      return {
-        ...prev,
-        [category]: currentFilters
-      };
-    });
-  };
-
-  const handleClearAll = () => {
-    setFilters({
-      genre: [],
-      skinType: [],
-      concern: [],
-      ingredient: [],
-      size: []
-    });
-  };
-
-  if (loading) return <div className="text-gray-500">Loading filters...</div>;
-  if (error) return <div className="text-red-500">Error: {error.message}</div>;
+  const categoryNames = categories.map(cat => cat.name);
+  const brandNames = brands.map(brand => brand.name);
 
   return (
     <aside className="w-full bg-white rounded-lg shadow-sm border border-gray-200 p-6 self-start">
       <div className="flex justify-between items-center pb-4 border-b border-gray-200">
         <h2 className="text-xl font-bold text-gray-900">Filtrage</h2>
         <button
-          onClick={handleClearAll}
+          onClick={onClearAll}
           className="text-sm text-gray-500 hover:text-pink-600 transition-colors"
         >
           Effacer tous
@@ -130,79 +189,88 @@ const FilterSidebar = () => {
       </div>
 
       <div className="divide-y divide-gray-200">
+        {/* Category Filter */}
+        <FilterSection title="Catégorie">
+          <CheckboxList
+            items={categoryNames}
+            category="category"
+            filters={filters}
+            onFilterChange={onFilterChange}
+            expanded={expanded}
+            setExpanded={setExpanded}
+          />
+        </FilterSection>
+
         {/* Genre Filter */}
         <FilterSection title="Genre">
-          <div className="space-y-3">
-            {uniqueGenres.map(genre => (
-              <CheckboxItem
-                key={genre}
-                id={genre}
-                label={genre}
-                checked={filters.genre.includes(genre)}
-                onChange={() => handleFilterChange('genre', genre)}
-              />
-            ))}
-          </div>
+          <CheckboxList
+            items={options.genre}
+            category="genre"
+            filters={filters}
+            onFilterChange={onFilterChange}
+            expanded={expanded}
+            setExpanded={setExpanded}
+          />
+        </FilterSection>
+
+        {/* Brands Filter */}
+        <FilterSection title="Brands">
+          <CheckboxList
+            items={brandNames}
+            category="brands"
+            filters={filters}
+            onFilterChange={onFilterChange}
+            expanded={expanded}
+            setExpanded={setExpanded}
+          />
         </FilterSection>
 
         {/* Skin Type Filter */}
         <FilterSection title="Type de peau">
-          <div className="space-y-3">
-            {uniqueSkinTypes.map(skinType => (
-              <CheckboxItem
-                key={skinType}
-                id={skinType}
-                label={skinType}
-                checked={filters.skinType.includes(skinType)}
-                onChange={() => handleFilterChange('skinType', skinType)}
-              />
-            ))}
-          </div>
+          <CheckboxList
+            items={options.typePeau}
+            category="typePeau"
+            filters={filters}
+            onFilterChange={onFilterChange}
+            expanded={expanded}
+            setExpanded={setExpanded}
+          />
         </FilterSection>
 
         {/* Concern Filter */}
         <FilterSection title="Concern">
-          <div className="space-y-3">
-            {uniqueConcerns.map(concern => (
-              <CheckboxItem
-                key={concern}
-                id={concern}
-                label={concern}
-                checked={filters.concern.includes(concern)}
-                onChange={() => handleFilterChange('concern', concern)}
-              />
-            ))}
-          </div>
+          <CheckboxList
+            items={options.concern}
+            category="concern"
+            filters={filters}
+            onFilterChange={onFilterChange}
+            expanded={expanded}
+            setExpanded={setExpanded}
+          />
         </FilterSection>
 
-        {/* Ingredient Filter */}
+        {/* Ingredients Filter */}
         <FilterSection title="Ingredients">
-          <div className="space-y-3">
-            {uniqueIngredients.map(ingredient => (
-              <CheckboxItem
-                key={ingredient}
-                id={ingredient}
-                label={ingredient}
-                checked={filters.ingredient.includes(ingredient)}
-                onChange={() => handleFilterChange('ingredient', ingredient)}
-              />
-            ))}
-          </div>
+          <CheckboxList
+            items={options.ingredients}
+            category="ingredients"
+            filters={filters}
+            onFilterChange={onFilterChange}
+            expanded={expanded}
+            setExpanded={setExpanded}
+          />
         </FilterSection>
 
         {/* Size Filter */}
         <FilterSection title="Size">
-          <div className="space-y-3">
-            {uniqueSizes.map(size => (
-              <CheckboxItem
-                key={size}
-                id={size}
-                label={size}
-                checked={filters.size.includes(size)}
-                onChange={() => handleFilterChange('size', size)}
-              />
-            ))}
-          </div>
+          <CheckboxList
+            items={options.size}
+            category="size"
+            filters={filters}
+            onFilterChange={onFilterChange}
+            expanded={expanded}
+            setExpanded={setExpanded}
+          />
         </FilterSection>
       </div>
     </aside>

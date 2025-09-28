@@ -212,7 +212,7 @@ const Avis: React.FC = () => {
             onClick={handleAddComment}
             disabled={loading}
             className={`px-4 py-2 rounded text-sm text-white ${
-              loading ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'
+              loading ? 'bg-gray-400' : 'bg-pink-600 hover:bg-blue-700'
             }`}
           >
             {loading ? 'Adding...' : 'Add Comment'}

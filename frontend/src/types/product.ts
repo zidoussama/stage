@@ -1,3 +1,5 @@
+
+// frontend/src/types/product.ts
 export interface Product {
 _id: string; 
   name: string;
@@ -16,7 +18,10 @@ _id: string;
   typedepeau?: string[];
   ingredients: string[];
   genre?: string;
-  Brand:  string;
+  Brand?: {  // Updated to object type
+    _id: string;
+    name: string;
+  };
   createdAt: string;
   __v?: number;
   tag?: 'SOLDE' | 'NEW' | string;

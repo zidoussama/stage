@@ -9,45 +9,52 @@ import {
   ChevronRight,
   
 } from "lucide-react";
-import {FaExpand} from 'react-icons/fa6';
+
 import type { Product } from "@/app/Accueil/types/accueil";
 import { useProducts } from "@/hooks/fetshproduct";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useBag } from "@/hooks/useBag";
 import { useProductNavigation } from "@/hooks/useProductNavigation";
+import { useLike } from "@/hooks/useToggleLike";
 
 // --- ProductCard component ---
-const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
-  const [isHovered, setIsHovered] = useState(false);
-    const { addToBag } = useBag();
-    const goToProduct = useProductNavigation();
-    function handleAddToBag(product: any) {
-      addToBag({
-        _id: product._id,
-        name: product.name,
-        price: product.price,
-        categoryof: product.category.name,
-        imageUrl: product.imageUrls[0],
-      });
-    }
+interface ProductCardProps {
+  product: Product;
+  isLiked: boolean;
+  onToggleLike: (productId: string) => void;
+}
 
-  const discountedPrice =
-    product.discount > 0
-      ? (product.price * (1 - product.discount / 100)).toFixed(2)
-      : null;
+const ProductCard: React.FC<ProductCardProps> = ({ product, isLiked, onToggleLike }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const { addToBag } = useBag();
+  const goToProduct = useProductNavigation();
+  function handleAddToBag(product: any) {
+    addToBag({
+      _id: product._id,
+      name: product.name,
+      price: product.price,
+      categoryof: product.category.name,
+      imageUrl: product.imageUrls[0],
+    });
+  }
+
+  const originalPrice = product.price;
+  const discount = product.discount || 0;
+  const newPrice = discount > 0 ? (originalPrice * (1 - discount / 100)).toFixed(2) : originalPrice.toFixed(2);
+  const showDiscount = discount > 0;
 
   return (
     <div
-      
+      onClick={() => goToProduct(product)}
       className={`flex items-start gap-4 p-4 h-full transition-colors duration-300 ${
         isHovered ? "bg-gray-50" : "bg-white"
       }`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="flex-shrink-0">
+      <div  className="flex-shrink-0">
         <Image
-        onClick={() => goToProduct(product)}
+        
           src={product.imageUrls[0]}
           alt={product.name}
           width={140}
@@ -68,24 +75,20 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
           </div>
 
           <div className="flex items-center gap-3 my-2">
-            {discountedPrice ? (
+            <span className="text-xl font-bold text-gray-900">
+              {newPrice} DT
+            </span>
+            {showDiscount && (
               <>
-                <span className="text-xl font-bold text-gray-900">
-                  {discountedPrice} DT
-                </span>
                 <span className="text-sm text-gray-400 line-through">
-                  {product.price.toFixed(2)} DT
+                  {originalPrice.toFixed(2)} DT
                 </span>
                 {!isHovered && (
                   <span className="bg-pink-500 text-white text-xs font-bold w-10 h-10 flex items-center justify-center rounded-full">
-                    -{product.discount}%
+                    -{discount}%
                   </span>
                 )}
               </>
-            ) : (
-              <span className="text-xl font-bold text-gray-900">
-                {product.price.toFixed(2)} :DT
-              </span>
             )}
           </div>
 
@@ -95,23 +98,29 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
         </div>
 
         <div className="mt-auto flex justify-between items-center">
-          <button className="bg-gray-800 text-white text-xs font-bold px-5 py-2.5 rounded-md hover:bg-pink-700 tracking-wider" onClick={() => handleAddToBag(product)}>
+          <button className="bg-gray-800 text-white text-xs font-bold px-5 py-2.5 rounded-md hover:bg-pink-700 tracking-wider" onClick={(e) => {
+  e.stopPropagation();
+  handleAddToBag(product);
+}}>
             ADD TO BAG
           </button>
-          {isHovered && (
-            <div className="bg-pink-500 text-white text-xl font-bold w-10 h-10 flex items-center justify-center rounded-full">
-              %
+          {isHovered && showDiscount && (
+            <div className="bg-pink-500 text-white text-xs font-bold w-10 h-10 flex items-center justify-center rounded-full">
+              -{discount}%
             </div>
           )}
         </div>
 
         {isHovered && (
           <div className="absolute top-0 right-0 flex flex-col gap-3">
-            <button className="text-gray-500 hover:text-red-500">
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleLike(product._id);
+              }}
+              className={`transition-colors ${isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'}`}
+            >
               <Heart className="w-5 h-5" />
-            </button>
-            <button className="text-gray-500 hover:text-gray-800">
-              <FaExpand className="w-5 h-5" />
             </button>
           </div>
         )}
@@ -123,8 +132,10 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
 // --- Main Page ---
 const VenteFlashPage: React.FC = () => {
   const { products, loading, error } = useProducts("vent flash");
+  const { toggleLike, getUserLikes, getProductLikesCount } = useLike();
 
   const [currentPage, setCurrentPage] = useState(1);
+  const [productLikes, setProductLikes] = useState<Record<string, { liked: boolean; count: number }>>({});
   const productsPerPage = 10;
 
   const totalPages = Math.ceil(products.length / productsPerPage);
@@ -140,16 +151,61 @@ const VenteFlashPage: React.FC = () => {
     }
   };
 
+  // Fetch initial like status and counts for all products
+  useEffect(() => {
+    const fetchLikes = async () => {
+      if (!products.length) return;
+      try {
+        const userLikes = await getUserLikes();
+        const likedProducts = userLikes.reduce((acc: Record<string, boolean>, like: any) => {
+          acc[like.product._id] = true;
+          return acc;
+        }, {});
+
+        const countsPromises = products.map(p => getProductLikesCount(p._id));
+        const counts = await Promise.all(countsPromises);
+
+        const likesData = products.reduce((acc, p, i) => {
+          acc[p._id] = { liked: likedProducts[p._id] || false, count: counts[i] };
+          return acc;
+        }, {} as Record<string, { liked: boolean; count: number }>);
+
+        setProductLikes(likesData);
+      } catch (err) {
+        console.error('Error fetching initial likes data:', err);
+      }
+    };
+
+    fetchLikes();
+  }, [products, getUserLikes, getProductLikesCount]);
+
+  // Toggle like handler
+  const handleToggleLike = useCallback(async (productId: string) => {
+    try {
+      const data = await toggleLike(productId);
+      const newLiked = data.like.is_liked;
+      setProductLikes(prev => ({
+        ...prev,
+        [productId]: { ...prev[productId], liked: newLiked }
+      }));
+
+      // Re-fetch count
+      const newCount = await getProductLikesCount(productId);
+      setProductLikes(prev => ({
+        ...prev,
+        [productId]: { ...prev[productId], count: newCount }
+      }));
+    } catch (err) {
+      console.error('Error toggling like:', err);
+    }
+  }, [toggleLike, getProductLikesCount]);
+
   return (
     <div className="bg-white min-h-screen">
       <main className="container mx-auto px-4 sm:px-6 lg:px-24 py-10">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-900">Vente Flash</h2>
           <div className="text-right">
-            <button onClick={() => console.log(products)} className="flex items-center gap-2 border border-gray-300 rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-              Prix plus élevé
-              <SlidersHorizontal className="h-4 w-4 text-gray-500" />
-            </button>
             <p className="text-xs text-gray-500 mt-1">
               {loading ? "Chargement..." : `${products.length} résultats trouvés`}
             </p>
@@ -162,11 +218,18 @@ const VenteFlashPage: React.FC = () => {
         {!loading && !error && (
           <div className="rounded-md overflow-hidden">
             <div className="grid grid-cols-1 md:grid-cols-2 -m-px">
-              {paginatedProducts.map((product, index) => (
-                <div key={index} className="p-2">
-                  <ProductCard product={product} />
-                </div>
-              ))}
+              {paginatedProducts.map((product, index) => {
+                const likesData = productLikes[product._id] || { liked: false, count: 0 };
+                return (
+                  <div key={index} className="p-2">
+                    <ProductCard 
+                      product={product} 
+                      isLiked={likesData.liked}
+                      onToggleLike={handleToggleLike} 
+                    />
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

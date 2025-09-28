@@ -1,4 +1,4 @@
-
+// frontend/src/app/filter/types/shop.ts
 import { StaticImageData } from 'next/image';
 
 

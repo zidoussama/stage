@@ -6,7 +6,6 @@ import {
   FaBolt,
   FaPlus,
   FaShoppingCart,
-  FaRegCommentDots,
   FaSignOutAlt,
   FaUser,
 } from 'react-icons/fa';
@@ -141,7 +140,6 @@ export default function Navbar() {
               <MenuButton icon={<FaFireAlt />} text="Soldes" bgColor="bg-red-500" onClick={() => handleButtonClick('Soldes')} />
               <MenuButton icon={<FaBolt />} text="Vente Flash" bgColor="bg-pink-500" onClick={() => handleButtonClick('Vente Flash')} />
               <MenuButton icon={<FaPlus />} text="Nouveau produit" bgColor="bg-pink-500" onClick={() => handleButtonClick('Nouveau produit')} />
-              <MenuButton icon={null} text="Bons plans" bgColor="bg-white" onClick={() => handleButtonClick('Bons plans')} />
               <MenuButton icon={null} text="Nous contacter" bgColor="bg-white" onClick={() => handleButtonClick('Nous contacter')} />
               <MenuButton icon={null} text="Aide !" bgColor="bg-white" onClick={() => handleButtonClick('Aide !')} />
             </div>

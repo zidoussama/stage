@@ -1,4 +1,4 @@
-// components/Pagination.tsx
+// frontend/src/app/filter/components/Pagination.tsx
 'use client';
 
 import React from 'react';

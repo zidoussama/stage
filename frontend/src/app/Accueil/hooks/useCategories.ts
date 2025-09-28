@@ -1,3 +1,4 @@
+// frontend/src/app/Accueil/hooks/useCategories.ts
 "use client"
 
 import { useEffect,useState } from "react"
