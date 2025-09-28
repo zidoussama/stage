@@ -146,7 +146,7 @@ const VenteFlashPage: React.FC = () => {
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-900">Vente Flash</h2>
           <div className="text-right">
-            <button className="flex items-center gap-2 border border-gray-300 rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+            <button onClick={() => console.log(products)} className="flex items-center gap-2 border border-gray-300 rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
               Prix plus élevé
               <SlidersHorizontal className="h-4 w-4 text-gray-500" />
             </button>

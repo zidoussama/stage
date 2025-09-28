@@ -1,3 +1,4 @@
+// frontend/src/hooks/useBag.ts
 import { useContext } from 'react';
 import { BagContext } from '@/context/BagContext';
 
