@@ -12,7 +12,7 @@ _id: string;
   size?: string;
   Composition?: string;
   otherinfo?: string;
-  state: 'none' | 'sold' | 'sale' | 'new in store' | 'vent flash';
+  state: 'none' | 'sold' | 'sale' | 'new in store' | 'vent flash' | 'FeaturedProducts';
   discount: number;
   concern?: string[];
   typedepeau?: string[];

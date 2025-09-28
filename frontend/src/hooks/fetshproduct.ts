@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Product } from "@/app/Accueil/types/accueil";
 
 /**
- * @param stateFilter Optional product.state value to filter by (case-insensitive).
+ * @param stateFilter Optional product.state value to filter by.
  */
 export const useProducts = (stateFilter?: string) => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -23,7 +23,7 @@ export const useProducts = (stateFilter?: string) => {
         if (stateFilter) {
           filteredProducts = data.filter(
             (product) =>
-              product.state?.toLowerCase() === stateFilter.toLowerCase()
+              product.state === stateFilter
           );
         }
 

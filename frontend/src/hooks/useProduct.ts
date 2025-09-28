@@ -33,7 +33,7 @@ const useProductById = (id: string) => {
   return { product, loading, error };
 };
 
-export default useProductById;
+export { useProductById };
 
 const getAllProducts = async () => {
   try {

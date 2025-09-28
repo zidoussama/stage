@@ -12,7 +12,7 @@ import { RiMessengerLine } from 'react-icons/ri';
 import RelatedProducts from '@/components/RelatedProducts';
 import ProductInfoTabs from '../components/ProductInfoTabs';
 import { useLike } from '../../../hooks/useToggleLike';
-import useProductById from '@/hooks/useProduct';
+import {useProductById} from '@/hooks/useProduct';
 import { useBag } from '@/hooks/useBag';
 
 interface StarRatingProps {

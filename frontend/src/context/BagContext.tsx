@@ -7,7 +7,7 @@ import { FiCheck } from 'react-icons/fi';
 
 interface BagContextValue {
   bag: BagItem[];
-  addToBag: (item: Omit<BagItem, 'quantity'>, quantity?: number) => void;
+  addToBag: (item: Omit<BagItem, 'quantity'>, quantity?: number, options?: { showPopup?: boolean }) => void;
   setBag: React.Dispatch<React.SetStateAction<BagItem[]>>;
   handleRemoveItem: (id: string) => void;
 }
@@ -41,7 +41,9 @@ export function BagProvider({ children }: { children: ReactNode }) {
     }
   }, [popupVisible, lastAddedItem]);
 
-  function addToBag(item: Omit<BagItem, 'quantity'>, quantity = 1) {
+  function addToBag(item: Omit<BagItem, 'quantity'>, quantity = 1, options?: { showPopup?: boolean }) {
+    const shouldShowPopup = options?.showPopup ?? true; // Default to true
+
     setBag((prevBag) => {
       let newBag = [...prevBag];
       let updatedItem: BagItem | null = null;
@@ -60,7 +62,8 @@ export function BagProvider({ children }: { children: ReactNode }) {
       }
       // else: no change, don't show popup
 
-      if (updatedItem) {
+      // Show popup only if shouldShowPopup is true
+      if (updatedItem && shouldShowPopup) {
         setLastAddedItem(updatedItem);
         setPopupVisible(true);
       }

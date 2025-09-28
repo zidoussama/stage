@@ -11,7 +11,7 @@ const authMiddleware = require('../auth/authMiddleware');
 
 
 router.post('/', authMiddleware, toggleLike);
-router.get('/product/:productId', authMiddleware, getLikesForProduct);
-router.get('/user/:userId', authMiddleware, getUserLikes);
+router.get('/product/:productId',  getLikesForProduct);
+router.get('/user/:userId', getUserLikes);
 
 module.exports = router;

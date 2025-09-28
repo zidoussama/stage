@@ -40,7 +40,7 @@ const productSchema = new mongoose.Schema({
     },
     state: {
         type: String,
-        enum: ['none', 'sold','sale', 'new in store', 'vent flash'],
+        enum: ['none', 'sold','sale', 'new in store', 'vent flash','FeaturedProducts'],
         default: 'none'
     },
     discount: {

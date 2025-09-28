@@ -4,10 +4,12 @@ import { useState, useRef } from 'react';
 import Image from 'next/image';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import useCategories from '../hooks/useCategories';
+import { useRouter } from 'next/navigation';
 
 export default function CategorySlider() {
   const [activeIndex, setActiveIndex] = useState(0);
   const sliderRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   const { categories, loading, error } = useCategories();
 
@@ -17,6 +19,13 @@ export default function CategorySlider() {
 
   const scrollPrev = () => {
     sliderRef.current?.scrollBy({ left: -200, behavior: 'smooth' });
+  };
+
+  const handleCategoryClick = (catName: string) => {
+    const params = new URLSearchParams();
+    params.append('category', catName);
+    const queryString = params.toString();
+    router.push(`/filter?${queryString}`);
   };
 
   if (loading) return <p className="text-center py-8">Chargement...</p>;
@@ -46,8 +55,8 @@ export default function CategorySlider() {
         >
           {categoryList.map((cat, index) => (
             <div
-              key={cat.id || cat.id || index}
-              onClick={() => setActiveIndex(index)}
+              key={cat.id || index}
+              onClick={() => handleCategoryClick(cat.name)}
               className={`snap-start flex flex-col items-center min-w-[100px] transition-all duration-200 cursor-pointer ${
                 index === activeIndex ? 'text-pink-600 font-bold' : 'text-gray-700'
               }`}

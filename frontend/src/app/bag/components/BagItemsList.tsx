@@ -1,3 +1,5 @@
+'use client';
+
 import Image from "next/image";
 import { BagItem } from "@/app/bag/types/bag";
 import { FaTrash } from "react-icons/fa";
@@ -10,9 +12,12 @@ interface BagItemsListProps {
 export const BagItemsList = ({ items }: BagItemsListProps) => {
   const { handleRemoveItem, addToBag } = useBag();
 
-const increase = (item: BagItem) => addToBag({ ...item }, 1/2);
-const decrease = (item: BagItem) => addToBag({ ...item }, -1/2);
+  const increase = (item: BagItem) => addToBag({ ...item }, 1, { showPopup: false }); // Suppress popup for quantity increase
+  const decrease = (item: BagItem) => addToBag({ ...item }, -1, { showPopup: false }); // Suppress popup for quantity decrease
 
+  const handleRemove = (itemId: string) => {
+    handleRemoveItem(itemId); // Direct removal without popup
+  };
 
   return (
     <div className="bg-white shadow rounded-lg">
@@ -47,7 +52,7 @@ const decrease = (item: BagItem) => addToBag({ ...item }, -1/2);
                   </div>
                 </div>
                 <div className="absolute top-0 right-0 sm:bottom-0 sm:top-auto">
-                  <button onClick={() => handleRemoveItem(item._id)} className="flex p-2 rounded text-gray-500 hover:text-gray-900">
+                  <button onClick={() => handleRemove(item._id)} className="flex p-2 rounded text-gray-500 hover:text-gray-900">
                     <FaTrash className="h-5 w-5"/>
                   </button>
                 </div>

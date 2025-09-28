@@ -11,6 +11,7 @@ const likeRoutes = require('./routes/likeRoutes');
 const user =require('./routes/userRoutes');
 const brand= require('./routes/brandRoutes');
 const avisRoutes = require('./routes/avisRoutes');
+const contactRoutes = require('./routes/contactRoutes');
 
 const app = express();
 
@@ -32,7 +33,7 @@ app.use('/api/likes', likeRoutes);
 app.use('/api/users', user);
 app.use('/api/brands', brand);
 app.use('/api/avis', avisRoutes);
-
+app.use('/api/contact', contactRoutes);
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => console.log(`Server running on port ${port}`));
