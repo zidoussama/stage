@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
+import { useRouter } from 'next/navigation';
 import { useUpdateUser } from '@/hooks/useUserupdate';
 
 type UserInfo = {
@@ -9,10 +10,6 @@ type UserInfo = {
   lastname: string;
   email: string;
   phonenumber: string;
-};
-
-type Props = {
-  onBack: () => void;
 };
 
 const PencilIcon = () => (
@@ -32,7 +29,8 @@ const PencilIcon = () => (
   </svg>
 );
 
-export default function PersonalInfoForm({ onBack }: Props) {
+export default function PersonalInfoForm() {
+  const router = useRouter();
   const [user, setUser] = useState<UserInfo | null>(null);
   const [formData, setFormData] = useState<UserInfo | null>(null);
   const [editingField, setEditingField] = useState<string | null>(null);
@@ -100,6 +98,10 @@ export default function PersonalInfoForm({ onBack }: Props) {
     } catch {
       setNotification({ type: 'error', message: 'Something went wrong during update.' });
     }
+  };
+
+  const handleBack = () => {
+    router.back(); // Or router.push('/products') if preferred
   };
 
   return (
@@ -246,7 +248,7 @@ export default function PersonalInfoForm({ onBack }: Props) {
           {loading ? 'Updating...' : 'Update'}
         </button>
         <button
-          onClick={onBack}
+          onClick={handleBack}
           className="border border-pink-600 text-pink-600 font-semibold px-6 py-3 rounded-lg hover:bg-pink-50 transition"
         >
           Back to Products
