@@ -1,3 +1,5 @@
+// backend/controllers/likeController.js
+
 const Like = require('../models/Likes');
 
 // Create or toggle a like

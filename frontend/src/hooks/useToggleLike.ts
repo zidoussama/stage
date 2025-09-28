@@ -1,68 +1,91 @@
-import { useState } from 'react';
-import Cookies from 'js-cookie';
-import {jwtDecode} from 'jwt-decode';
+// frontend/src/hooks/useLike.ts
+'use client';
 
-type JwtPayload = {
-  user_id: string; // or userId depending on your token's structure
-};
+import axios from "axios";
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
 
-type Like = {
-  _id: string;
-  user: string;
-  product: string;
-  is_liked: boolean;
-};
+interface JwtPayload {
+  id?: string;
+  _id?: string;
+  userId?: string;
+}
 
-type ToggleLikeResponse = {
-  message: string;
-  like: Like;
-};
-
-type UseToggleLikeReturn = {
-  toggleLike: (productId: string) => Promise<Like | null>;
-  loading: boolean;
-  error: string | null;
-};
-
-export function useToggleLike(): UseToggleLikeReturn {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
+export const useLike = () => {
   const toggleLike = async (productId: string) => {
-    setLoading(true);
-    setError(null);
-
     try {
-      const token = Cookies.get('token');
-      if (!token) throw new Error('User is not authenticated');
+      const token = Cookies.get("token");
+      if (!token) throw new Error("No token found");
 
-      const decoded = jwtDecode<JwtPayload>(token);
-      const userId = decoded.user_id;
-      if (!userId) throw new Error('Invalid token: no user id');
+      const decoded: JwtPayload = jwtDecode(token);
+      const userId = decoded.id || decoded._id || decoded.userId;
+      if (!userId) throw new Error("Invalid token: userId missing");
 
-      const res = await fetch('/api/likes/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`, // pass the token if your backend uses it for auth
-        },
-        body: JSON.stringify({ userId, productId }),
-      });
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/likes`,
+        { userId, productId }, // Matches backend destructuring
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || 'Failed to toggle like');
-      }
-
-      const data: ToggleLikeResponse = await res.json();
-      setLoading(false);
-      return data.like;
+      return res.data; // Returns the like object
     } catch (err: any) {
-      setError(err.message || 'Something went wrong');
-      setLoading(false);
-      return null;
+      console.error("Like error:", err.response?.data || err.message);
+      throw err;
     }
   };
 
-  return { toggleLike, loading, error };
-}
+  // Fetch user's liked products (for initial status checks)
+  const getUserLikes = async (): Promise<any[]> => {
+    try {
+      const token = Cookies.get("token");
+      if (!token) throw new Error("No token found");
+
+      const decoded: JwtPayload = jwtDecode(token);
+      const userId = decoded.id || decoded._id || decoded.userId;
+      if (!userId) throw new Error("Invalid token: userId missing");
+
+      const res = await axios.get(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/likes/user/${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      return res.data; // Array of liked products (only is_liked: true)
+    } catch (err: any) {
+      console.error("Fetch likes error:", err.response?.data || err.message);
+      throw err;
+    }
+  };
+
+  // New: Fetch count of likes for a product
+  const getProductLikesCount = async (productId: string): Promise<number> => {
+    try {
+      const token = Cookies.get("token");
+      if (!token) throw new Error("No token found");
+
+      const res = await axios.get(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/likes/product/${productId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      return res.data.length; // Array length gives the count of likes (only is_liked: true)
+    } catch (err: any) {
+      console.error("Fetch product likes count error:", err.response?.data || err.message);
+      throw err;
+    }
+  };
+
+  return { toggleLike, getUserLikes, getProductLikesCount };
+};

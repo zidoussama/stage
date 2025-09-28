@@ -8,6 +8,7 @@ import Composition from './Composition';
 import AutresInformations from './AutresInformations';
 import Avis from '@/components/Avis';
 
+
 interface ProductData {
   description: string;
   composition: string;
@@ -19,14 +20,15 @@ interface ProductInfoTabsProps {
 }
 
 const ProductInfoTabs: React.FC<ProductInfoTabsProps> = ({ productData }) => {
+ 
   const [activeTab, setActiveTab] = useState<string>('avis');
-  const totalReviews = 143;
+  
 
   const tabs = [
     { id: 'description', label: 'Description' },
     { id: 'composition', label: 'Composition' },
     { id: 'autres', label: 'Autres informations' },
-    { id: 'avis', label: `Avis (${totalReviews})` },
+    { id: 'avis', label: `Avis` },
   ];
 
   const renderContent = () => {
@@ -63,10 +65,7 @@ const ProductInfoTabs: React.FC<ProductInfoTabsProps> = ({ productData }) => {
               </button>
             ))}
           </nav>
-          <button className="hidden sm:flex items-center gap-2 text-xs text-gray-500 hover:text-gray-800">
-            <FiAlertCircle size={14} />
-            <span>Signaler le produit</span>
-          </button>
+          
         </div>
         <div className="pt-8 text-gray-600">{renderContent()}</div>
       </div>

@@ -10,8 +10,8 @@ interface BagItemsListProps {
 export const BagItemsList = ({ items }: BagItemsListProps) => {
   const { handleRemoveItem, addToBag } = useBag();
 
-const increase = (item: BagItem) => addToBag({ ...item }, 1);
-const decrease = (item: BagItem) => addToBag({ ...item }, -1);
+const increase = (item: BagItem) => addToBag({ ...item }, 1/2);
+const decrease = (item: BagItem) => addToBag({ ...item }, -1/2);
 
 
   return (

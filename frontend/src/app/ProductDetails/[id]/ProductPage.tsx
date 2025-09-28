@@ -1,18 +1,17 @@
-// frontend/src/app/ProductDetails/[id]/ProductPage.tsx
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import {
-  FiHeart, FiMaximize, FiEye, FiMinus, FiPlus, FiShoppingCart,
+  FiHeart, FiMinus, FiPlus, FiShoppingCart,
   FiChevronLeft, FiChevronRight
 } from 'react-icons/fi';
-import { FaStar, FaFacebookF, FaWhatsapp, FaTwitter } from 'react-icons/fa';
+import { FaStar, FaFacebookF, FaWhatsapp, FaTwitter, FaHeart } from 'react-icons/fa';
 import { RiMessengerLine } from 'react-icons/ri';
 
 import RelatedProducts from '@/components/RelatedProducts';
 import ProductInfoTabs from '../components/ProductInfoTabs';
-
+import { useLike } from '../../../hooks/useToggleLike';
 import useProductById from '@/hooks/useProduct';
 import { useBag } from '@/hooks/useBag';
 
@@ -48,12 +47,15 @@ interface ProductPageProps {
 
 const ProductPage: React.FC<ProductPageProps> = ({ productId }) => {
   const [quantity, setQuantity] = useState(1);
+  const [liked, setLiked] = useState(false);
+  const [count, setCount] = useState(0);
 
   // Fetch product by ID using custom hook
   const { product, loading, error } = useProductById(productId);
 
   // Bag context
   const { addToBag } = useBag();
+  const { toggleLike, getUserLikes, getProductLikesCount } = useLike();
 
   // Handlers
   const increase = useCallback(() => setQuantity(prev => prev + 1), []);
@@ -72,6 +74,38 @@ const ProductPage: React.FC<ProductPageProps> = ({ productId }) => {
       quantity
     );
   }, [product, quantity, addToBag]);
+
+  // Fetch initial like status and count
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        const [userLikes, productLikes] = await Promise.all([
+          getUserLikes(),
+          getProductLikesCount(productId)
+        ]);
+        const hasLiked = userLikes.some((like: any) => like.product._id === productId);
+        setLiked(hasLiked);
+        setCount(productLikes);
+      } catch (err) {
+        console.error('Error fetching initial data:', err);
+      }
+    };
+
+    fetchInitialData();
+  }, [productId, getUserLikes, getProductLikesCount]);
+
+  // Toggle like
+  const handleToggleLike = useCallback(async () => {
+    if (!product) return;
+    try {
+      const data = await toggleLike(product._id);
+      setLiked(data.like.is_liked);
+      const newCount = await getProductLikesCount(product._id);
+      setCount(newCount);
+    } catch (err) {
+      console.error('Error toggling like:', err);
+    }
+  }, [product?._id, toggleLike, getProductLikesCount]);
 
   // Loading/Error states
   if (loading) return <p>Loading product...</p>;
@@ -152,23 +186,18 @@ const ProductPage: React.FC<ProductPageProps> = ({ productId }) => {
           <div className="flex flex-col">
             <div className="flex justify-between">
               <h1 className="text-3xl font-bold text-gray-900 mt-1">{product.name}</h1>
-              <div className="flex gap-2">
-                <button className="icon-btn"><FiHeart /></button>
-                <button className="icon-btn"><FiMaximize /></button>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={handleToggleLike}
+                  className={`icon-btn ${liked ? 'text-pink-500' : 'text-gray-400 hover:text-pink-500'}`}
+                  aria-label="Toggle Like"
+                >
+                  {liked ? <FaHeart /> : <FiHeart />}
+                </button>
+                <span className="text-xs text-gray-500">({count})</span>
               </div>
             </div>
 
-            {/* Rating and stats */}
-            <div className="mt-3 flex items-center gap-4 text-sm text-gray-600">
-              <div className="flex items-center gap-1">
-                <StarRating rating={4.5} />
-                <span className="font-semibold ml-1">(4.5/5)</span>
-              </div>
-              <span className="divider" />
-              <span>143 Avis</span>
-              <span className="divider" />
-              <span>2.3K Ventes</span>
-            </div>
 
             {/* Price */}
             <div className="mt-5 flex items-baseline gap-3">
@@ -179,7 +208,7 @@ const ProductPage: React.FC<ProductPageProps> = ({ productId }) => {
                   <span className="line-through text-gray-400">{product.price.toFixed(2)} DT</span>
                 </>
               )}
-              <button className="ml-auto icon-btn bg-pink-600 text-white"><FiEye /></button>
+              
             </div>
 
             {/* Description */}

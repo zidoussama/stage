@@ -3,7 +3,7 @@
 
 import { useParams } from 'next/navigation';
 import React from 'react';
-import ProductPage from './ProductPage'; // 👈 move your ProductPage to its own file
+import ProductPage from './ProductPage';
 
 const ProductPageWrapper = () => {
   const params = useParams();
